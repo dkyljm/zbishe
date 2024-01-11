@@ -86,6 +86,8 @@ void myprintf(SGD_UCHAR *pucData, SGD_UINT32 uiDataLen)
 	printf("\n");
 }
 
+
+/*
 SGD_RV EccBackUpKeyPair(SGD_HANDLE phSessionHandle)
 {
 	SGD_RV rv = SDR_OK;
@@ -114,6 +116,8 @@ SGD_RV ImportKeyPair(SGD_HANDLE phSessionHandle)
 	}
 	return rv;
 }
+*/
+
 
 SGD_RV SM1_ENC_DEC_ECB(SGD_HANDLE phSessionHandle,SGD_HANDLE phKeyHandle)
 {
@@ -566,6 +570,8 @@ SGD_RV SM4_ENC_DEC_OFB(SGD_HANDLE phSessionHandle,SGD_HANDLE phKeyHandle)
 	free(pucTmpData);
 	return SDR_OK;
 }
+
+/*
 SGD_RV SM1_ENC_DEC_IPSEC(SGD_HANDLE phSessionHandle,SGD_HANDLE phKeyHandle)
 {
 	SGD_RV rv = SDR_OK;	
@@ -681,6 +687,10 @@ SGD_RV SM1_ENC_DEC_IPSEC(SGD_HANDLE phSessionHandle,SGD_HANDLE phKeyHandle)
 	free(pucTmpMacData);
 	return SDR_OK;
 }
+
+
+
+
 SGD_RV SM4_ENC_DEC_IPSEC(SGD_HANDLE phSessionHandle,SGD_HANDLE phKeyHandle)
 {
 	SGD_RV rv = SDR_OK;	
@@ -834,6 +844,8 @@ SGD_RV SGD_SM3Hash(SGD_HANDLE phSessionHandle)
 	return SDR_OK;
 
 }
+*/
+
 SGD_RV SM2EncDec(SGD_HANDLE phSessionHandle)
 {
 	SGD_RV rv = SDR_OK;
@@ -1002,6 +1014,27 @@ SGD_RV SM1_CBC(SGD_HANDLE phSessionHandle,SGD_HANDLE phKeyHandle)
 	return SDR_OK;
 }
 
+// 测试获取设备信息的函数
+SGD_RV Test_GetDeviceInfo(SGD_HANDLE phSessionHandle) {
+    DEVICEINFO deviceInfo;
+    SGD_RV rv = SDF_GetDeviceInfo(phSessionHandle, &deviceInfo);
+    if (rv != SDR_OK) {
+        printf("Failed to get device info with error code: %08x\n", rv);
+    } else {
+        printf("Device Info:\n");//设备信息
+        printf("IssuerName: %s\n", deviceInfo.IssuerName);//用户名
+        printf("DeviceName: %s\n", deviceInfo.DeviceName);//设备名
+        printf("DeviceSerial: %s\n", deviceInfo.DeviceSerial);//设备系列
+        printf("DeviceVersion: %u\n", deviceInfo.DeviceVersion);//设备版本
+        printf("StandardVersion: %u\n", deviceInfo.StandardVersion);//标准版
+        printf("AsymAlgAbility: %u, %u\n", deviceInfo.AsymAlgAbility[0], deviceInfo.AsymAlgAbility[1]);//不对称算术能力
+        printf("SymAlgAbility: %u\n", deviceInfo.SymAlgAbility);//符号运算能力
+        printf("HashAlgAbility: %u\n", deviceInfo.HashAlgAbility);//哈希代数能力
+        printf("BufferSize: %u\n", deviceInfo.BufferSize);//缓冲器大小
+        printf("\n");
+    }
+    return rv;
+}
 
 int main(int argc, char *argv[])
 {
@@ -1035,6 +1068,15 @@ int main(int argc, char *argv[])
 	}
 	printf("open session success!\n");
 	
+	// 测试获取设备信息
+	printf("Testing getting device information...\n");
+    rv = Test_GetDeviceInfo(phSessionHandle);
+    if(rv != SDR_OK) {
+        printf("Get device information failed with error code: %08x\n", rv);
+    } else {
+        printf("Get device information success.\n");
+    }
+	
 	rv = SDF_GenerateRandom(phSessionHandle, pOutRand, ulRandLen);
 	if(rv != SDR_OK)
 	{
@@ -1047,6 +1089,7 @@ int main(int argc, char *argv[])
 	printf("SDF_GenerateRandom success!\n");
 	//return 0;
 #if 1 
+	/*
 	rv = SDF_ImportRootKeyAndDeviceSN(phSessionHandle,(SGD_UINT8 *)ROOTKEY,(SGD_UINT8 *)DEVSN,16);
 	if(rv != SDR_OK)
 	{
@@ -1057,6 +1100,7 @@ int main(int argc, char *argv[])
 	{
 		printf("SDF_ImportRootKeyAndDeviceSN success\n");
 	}
+	*/
 #endif
 
 #if 1 
@@ -1080,6 +1124,7 @@ int main(int argc, char *argv[])
 	printf("CosVer: %s\n", CosVer);
 #endif
 
+	/*
 	rv = ImportKeyPair(phSessionHandle);
 	if(rv != SDR_OK)
 	{
@@ -1096,6 +1141,8 @@ int main(int argc, char *argv[])
 		goto err;
 	}
 	printf("EccBackUpKeyPair success\n");
+	
+	*/
 
 	rv =ExportKeyPair(phSessionHandle);
 	if(rv != SDR_OK)
@@ -1105,6 +1152,8 @@ int main(int argc, char *argv[])
 	}
 	printf("ExportKeyPair success\n");
 	
+	
+	/*
 	rv =SGD_SM3Hash(phSessionHandle);
 	if(rv != SDR_OK)
 	{
@@ -1112,6 +1161,10 @@ int main(int argc, char *argv[])
 		goto err;
 	} 
 	printf("SGD_SM3Hash success\n");
+	
+	*/
+	
+	
 	rv = SM2EncDec(phSessionHandle);
 	if(rv != SDR_OK)
 	{
@@ -1176,6 +1229,7 @@ int main(int argc, char *argv[])
 	}
 	printf("SM4_ENC_DEC_OFB success. \n");
 
+	/*
 	rv =SM1_ENC_DEC_IPSEC(phSessionHandle,phKeyHandle);
 	if(rv != SDR_OK)
 	{
@@ -1191,6 +1245,7 @@ int main(int argc, char *argv[])
 		goto err;
 	}
 	printf("SM4_ENC_DEC_IPSEC success.\n");
+	*/
 
 
 err:
