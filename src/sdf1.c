@@ -6,7 +6,6 @@
 // 示例实现 SDF_OpenDevice 函数
 SGD_RV SDF_OpenDevice(SGD_HANDLE *phDeviceHandle) {
     // 这里应该是打开设备的代码
-    // 由于没有具体的设备实现细节，我们只返回成功
     *phDeviceHandle = (SGD_HANDLE)malloc(sizeof(SGD_HANDLE));
     if (*phDeviceHandle == NULL) {
         return SDR_MALLOCFAILED;
@@ -15,14 +14,19 @@ SGD_RV SDF_OpenDevice(SGD_HANDLE *phDeviceHandle) {
     return SDR_OK;
 }
 
+
+
+
 // 示例实现 SDF_CloseDevice 函数
 SGD_RV SDF_CloseDevice(SGD_HANDLE hDeviceHandle) {
-    // 这里应该是关闭设备的代码
-    // 由于没有具体的设备实现细节，我们只返回成功
-    free(hDeviceHandle);
+    // 检查输入参数是否有效
+    if (hDeviceHandle == NULL) {
+        return SDR_OPENDEVICE; // 输入参数无效
+    }
+
+    // 返回成功状态
     return SDR_OK;
 }
-
 // ... 其他函数的实现 ...
 
 // 示例实现 SDF_GenerateRandom 函数
@@ -71,18 +75,29 @@ SGD_RV SDF_CloseSession(SGD_HANDLE hSessionHandle) {
 SGD_RV SDF_GetDeviceInfo(SGD_HANDLE hSessionHandle, DEVICEINFO *pstDeviceInfo) {
     // 填充设备信息结构体的示例数据
     memset(pstDeviceInfo->IssuerName, 0, sizeof(pstDeviceInfo->IssuerName));
-    strcpy((char *)pstDeviceInfo->IssuerName, "IssuerName");
+    strcpy((char *)pstDeviceInfo->IssuerName, "ljm");
     memset(pstDeviceInfo->DeviceName, 0, sizeof(pstDeviceInfo->DeviceName));
-    strcpy((char *)pstDeviceInfo->DeviceName, "DeviceName");
+    strcpy((char *)pstDeviceInfo->DeviceName, "Besiti");
     memset(pstDeviceInfo->DeviceSerial, 0, sizeof(pstDeviceInfo->DeviceSerial));
     strcpy((char *)pstDeviceInfo->DeviceSerial, "DeviceSerial");
     pstDeviceInfo->DeviceVersion = 1;
     pstDeviceInfo->StandardVersion = 1;
     memset(pstDeviceInfo->AsymAlgAbility, 0, sizeof(pstDeviceInfo->AsymAlgAbility));
-    pstDeviceInfo->SymAlgAbility = 0;
-    pstDeviceInfo->HashAlgAbility = 0;
+    pstDeviceInfo->SymAlgAbility = 1024;
+    pstDeviceInfo->HashAlgAbility = 1024;
     pstDeviceInfo->BufferSize = 2048;
 
+    return SDR_OK;
+}
+
+//导入根密钥和设备SN码, 只能导入一次
+SGD_RV SDF_ImportRootKeyAndDeviceSN(SGD_HANDLE hSessionHandle, SGD_UINT8* rootKey, SGD_UINT8* devSN, SGD_UINT32 len) {
+    // 假设这里有具体的实现，可以根据传入的参数进行相应的处理
+
+    // 在这里假设成功导入 RootKey 和 DeviceSN
+    printf("Simulated: RootKey and DeviceSN imported successfully.\n\n");
+
+    // 返回成功状态码
     return SDR_OK;
 }
 

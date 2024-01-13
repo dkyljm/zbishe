@@ -1058,6 +1058,7 @@ int main(int argc, char *argv[])
 		return 0;
 	}
 	printf("open device success!\n");
+	printf("\n");
 	
 	rv = SDF_OpenSession(phDeviceHandle, &phSessionHandle);
 	if(rv != SDR_OK)
@@ -1067,6 +1068,7 @@ int main(int argc, char *argv[])
 		return 0;
 	}
 	printf("open session success!\n");
+	printf("\n");
 	
 	// 测试获取设备信息
 	printf("Testing getting device information...\n");
@@ -1076,6 +1078,7 @@ int main(int argc, char *argv[])
     } else {
         printf("Get device information success.\n");
     }
+    printf("\n");
 	
 	rv = SDF_GenerateRandom(phSessionHandle, pOutRand, ulRandLen);
 	if(rv != SDR_OK)
@@ -1086,10 +1089,10 @@ int main(int argc, char *argv[])
 	}
 	printf("pOutRand:\n");
 	myprintf(pOutRand, ulRandLen);
-	printf("SDF_GenerateRandom success!\n");
+	printf("SDF_GenerateRandom success!\n\n");
 	//return 0;
 #if 1 
-	/*
+	
 	rv = SDF_ImportRootKeyAndDeviceSN(phSessionHandle,(SGD_UINT8 *)ROOTKEY,(SGD_UINT8 *)DEVSN,16);
 	if(rv != SDR_OK)
 	{
@@ -1100,7 +1103,7 @@ int main(int argc, char *argv[])
 	{
 		printf("SDF_ImportRootKeyAndDeviceSN success\n");
 	}
-	*/
+	
 #endif
 
 #if 1 
