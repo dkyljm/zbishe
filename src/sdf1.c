@@ -43,7 +43,10 @@ SGD_RV SDF_GenerateRandom(SGD_HANDLE hSessionHandle, SGD_UCHAR* pOutRand, SGD_UI
 
 SGD_RV SDF_OpenSession(SGD_HANDLE hDeviceHandle, SGD_HANDLE *phSessionHandle) {
     // 这里应该包含具体的实现代码，用于打开新的会话
-
+ // 检查输入参数的有效性
+    if (phSessionHandle == NULL) {
+        return SDR_INVALIDPARAMERR;
+    }
     // 例如，假设要分配内存并将其地址存储在*phSessionHandle中
     *phSessionHandle = malloc(sizeof(SGD_HANDLE));
 
