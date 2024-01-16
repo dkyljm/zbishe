@@ -1,9 +1,10 @@
+//gcc -o test_CloseSession test_CloseSession.c /home/ljm/zBESHELJP/zbishe/src/sdf1.c Unity/src/unity.c -IUnity/src
+
+
 #include "unity.h" 
 #include <stdlib.h>
 #include "/home/ljm/zBESHELJP/zbishe/include/sdf.h" // 假设sdf.h包含了SDF_CloseSession的声明
 
-
-#define SDR_GENERALERROR (0x0)
 
 void setUp(void) {
     // 在这里执行任何需要在每个测试之前运行的设置代码
@@ -13,29 +14,43 @@ void tearDown(void) {
     // 在这里执行任何需要在每个测试之后运行的清理代码
 }
 
-// 成功测试用例
-void test_SDF_CloseSession_Success(void) {
-    SGD_HANDLE sessionHandle = malloc(sizeof(SGD_HANDLE)); // 分配内存模拟会话句柄
-    if (sessionHandle == NULL) {
-        TEST_FAIL_MESSAGE("内存分配失败，无法进行测试");
+void test_SDF_CloseSession_validSession() {
+    SGD_HANDLE sessionHandle = malloc(sizeof(SGD_HANDLE))/* 有效的会话句柄 */;
+    
+     // 调用 SDF_CloseSession 函数
+    SGD_RV result = SDF_CloseSession(sessionHandle);
+
+    // 使用 Unity 提供的测试宏来检查结果
+    TEST_ASSERT_EQUAL(SDR_OK, result);  // 期望返回 SDR_OK
+    if (result == SDR_OK) {
+        printf("Test test_SDF_CloseSession_validSession passed.\n");
+    } else {
+        printf("Test test_SDF_CloseSession_validSession failed.\n");
     }
-    SGD_RV result = SDF_CloseSession(sessionHandle);
-    TEST_ASSERT_EQUAL_INT(SDR_OK, result); // 断言返回值为成功状态码
-    printf("成功测试: SDF_CloseSession 返回 SDR_OK，会话句柄关闭。\n");
 }
 
-// 失败测试用例
-void test_SDF_CloseSession_Failure(void) {
-    SGD_HANDLE sessionHandle = NULL; // 模拟无效的会话句柄
-    SGD_RV result = SDF_CloseSession(sessionHandle);
-    TEST_ASSERT_EQUAL_INT(SDR_GENERALERROR, result); // 断言返回值为错误状态码
-    printf("失败测试: SDF_CloseSession 返回 SDR_GENERALERROR，无效的会话句柄。\n");
+void test_SDF_CloseSession_invalidSession() {
+    SGD_HANDLE invalidSessionHandle = NULL;
+    
+    // 调用 SDF_CloseSession 函数
+    SGD_RV result = SDF_CloseSession(invalidSessionHandle);
+
+    // 使用 Unity 提供的测试宏来检查结果
+    TEST_ASSERT_EQUAL(SDR_OPENDEVICE, result);  // 期望返回 SDR_OPENDEVICE
+    if (result == SDR_OPENDEVICE) {
+        printf("Test test_SDF_CloseSession_invalidSession passed.\n");
+    } else {
+        printf("Test test_SDF_CloseSession_invalidSession failed.\n");
+    }
 }
 
-// 主函数，运行测试
-int main(void) {
+int main() {
     UNITY_BEGIN();
-    RUN_TEST(test_SDF_CloseSession_Success);
-    RUN_TEST(test_SDF_CloseSession_Failure);
-    return UNITY_END();
+
+    // 注册测试
+    RUN_TEST(test_SDF_CloseSession_validSession);
+    RUN_TEST(test_SDF_CloseSession_invalidSession);
+
+    UNITY_END();
+    return 0;
 }

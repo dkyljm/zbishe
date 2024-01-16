@@ -24,6 +24,7 @@ SGD_RV SDF_CloseDevice(SGD_HANDLE hDeviceHandle) {
         return SDR_OPENDEVICE; // 输入参数无效
     }
 
+    printf("CloseDevice success\n\n");
     // 返回成功状态
     return SDR_OK;
 }
@@ -49,9 +50,6 @@ SGD_RV SDF_OpenSession(SGD_HANDLE hDeviceHandle, SGD_HANDLE *phSessionHandle) {
     }
     // 例如，假设要分配内存并将其地址存储在*phSessionHandle中
     *phSessionHandle = malloc(sizeof(SGD_HANDLE));
-
-    
-
     // 进行一些其他初始化操作...
 
     // 返回成功状态码
@@ -61,7 +59,9 @@ SGD_RV SDF_OpenSession(SGD_HANDLE hDeviceHandle, SGD_HANDLE *phSessionHandle) {
 
 SGD_RV SDF_CloseSession(SGD_HANDLE hSessionHandle) {
     // 这里应该包含具体的实现代码，用于关闭会话
-
+	if (hSessionHandle == NULL) {
+        return SDR_OPENDEVICE; // 输入参数无效
+    }
     // 假设有一些操作，比如释放相关资源、关闭会话等
     // 这里的实现是示意性的，具体内容根据实际情况来编写
 
@@ -69,6 +69,7 @@ SGD_RV SDF_CloseSession(SGD_HANDLE hSessionHandle) {
     free(hSessionHandle);
 
     // 返回成功状态码
+    printf("CloseSession success\n\n");
     return SDR_OK;
 }
 

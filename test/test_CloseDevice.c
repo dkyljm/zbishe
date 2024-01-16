@@ -1,3 +1,6 @@
+//gcc -o test_CloseDevice test_CloseDevice.c /home/ljm/zBESHELJP/zbishe/src/sdf1.c Unity/src/unity.c -IUnity/src
+
+
 #include "unity.h"
 #include <stdlib.h>
 #include "/home/ljm/zBESHELJP/zbishe/include/sdf.h"  // 替换成实际的头文件
