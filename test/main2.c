@@ -100,7 +100,7 @@ SGD_RV EccBackUpKeyPair(SGD_HANDLE phSessionHandle)
 	}
 	return rv ;
 }
-*/
+
 
 SGD_RV ImportKeyPair(SGD_HANDLE phSessionHandle)
 {
@@ -116,7 +116,7 @@ SGD_RV ImportKeyPair(SGD_HANDLE phSessionHandle)
 	}
 	return rv;
 }
-
+*/
 
 
 SGD_RV SM1_ENC_DEC_ECB(SGD_HANDLE phSessionHandle,SGD_HANDLE phKeyHandle)
@@ -1127,16 +1127,16 @@ int main(int argc, char *argv[])
 	printf("CosVer: %s\n", CosVer);
 #endif
 
-	
+	/*
 	rv = ImportKeyPair(phSessionHandle);
 	if(rv != SDR_OK)
 	{
-		printf("\nImportKeyPair fail\n\n");
+		printf("ImportKeyPair fail\n");
 		goto err;
 	}
-	printf("\nImportKeyPair success\n\n");
+	printf("ImportKeyPair success\n");
 
-/*
+
 	rv = EccBackUpKeyPair(phSessionHandle);
 	if(rv != SDR_OK)
 	{

@@ -2,6 +2,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#define MAX_KEY_INDEX 100 // 或者根据实际情况设置合适的值
+
 
 // 示例实现 SDF_OpenDevice 函数
 SGD_RV SDF_OpenDevice(SGD_HANDLE *phDeviceHandle) {
@@ -119,6 +121,8 @@ SGD_RV SDF_GenerateKeyPair_ECC(SGD_HANDLE hSessionHandle, SGD_UINT32 uiAlgID, SG
     return SDR_OK;
 }
 
+
+
 // 示例实现 SDF_ExportECCPubKey 函数
 SGD_RV SDF_ExportECCPubKey(SGD_HANDLE hSessionHandle, SGD_UINT32 uiKeyInd, SGD_UCHAR *pPubKeyEnc) {
     // 这里应该是导出 ECC 公钥的代码
@@ -200,6 +204,11 @@ SGD_RV SDF_Decrypt(SGD_HANDLE hSessionHandle, SGD_UCHAR *pucKey, SGD_UINT32 uiAl
     return SDR_OK;
 }
 
+
+
+
+
+//文件操作
 // 示例实现 SDF_CreateFile 函数
 SGD_RV SDF_CreateFile(SGD_HANDLE hSessionHandle, SGD_UCHAR *pucFileName, SGD_UINT32 uiNameLen, SGD_UINT32 uiFileSize) {
     // 这里应该是创建文件的代码
@@ -233,5 +242,38 @@ SGD_RV SDF_DeleteFile(SGD_HANDLE hSessionHandle, SGD_UCHAR *pucFileName, SGD_UIN
 
     return SDR_OK;
 }
+
+
+
+SGD_RV SDF_ImportKeyPair(SGD_HANDLE phSessionHandle, SGD_UINT32 uiKeyIndex, const SGD_UCHAR *pucKey)
+{
+    // Assuming the existence of a session and a mechanism to import ECC key pairs
+    // This is a mock implementation as the actual implementation details
+    // such as how the session is managed or how keys are stored are not provided.
+
+    // Check for null pointers and valid key index
+    if (!phSessionHandle || !pucKey || uiKeyIndex < 1 || uiKeyIndex > MAX_KEY_INDEX) {
+        return SDR_INVALIDPARAMERR;
+    }
+
+    // Simulate importing the ECC key pair into the device or session
+    // The actual storage mechanism is not specified, so we'll just print a message
+    printf("Importing ECC key pair at index %u\n", uiKeyIndex);
+
+
+    return SDR_OK;
+}
+
+SGD_RV SDF_ImportECCKeyPair(SGD_HANDLE phSessionHandle, SGD_UINT32 uiKeyIndex, const SGD_UCHAR *pucKeyPair)
+{
+    // 检查参数的有效性
+    if (pucKeyPair == NULL) {
+        return SDR_INVALIDPARAMERR;
+    }
+
+
+    return SDR_OK;
+}
+
 
 
