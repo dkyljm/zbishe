@@ -87,7 +87,7 @@ void myprintf(SGD_UCHAR *pucData, SGD_UINT32 uiDataLen)
 }
 
 
-/*
+
 SGD_RV EccBackUpKeyPair(SGD_HANDLE phSessionHandle)
 {
 	SGD_RV rv = SDR_OK;
@@ -100,7 +100,7 @@ SGD_RV EccBackUpKeyPair(SGD_HANDLE phSessionHandle)
 	}
 	return rv ;
 }
-*/
+
 
 SGD_RV ImportKeyPair(SGD_HANDLE phSessionHandle)
 {
@@ -1036,6 +1036,17 @@ SGD_RV Test_GetDeviceInfo(SGD_HANDLE phSessionHandle) {
     return rv;
 }
 
+
+
+
+
+
+
+
+
+
+
+
 int main(int argc, char *argv[])
 {
 	SGD_HANDLE phDeviceHandle;
@@ -1136,16 +1147,16 @@ int main(int argc, char *argv[])
 	}
 	printf("\nImportKeyPair success\n\n");
 
-/*
+
 	rv = EccBackUpKeyPair(phSessionHandle);
 	if(rv != SDR_OK)
 	{
-		printf("EccBackUpKeyPair fail\n");
+		printf("\nEccBackUpKeyPair fail\n\n");
 		goto err;
 	}
-	printf("EccBackUpKeyPair success\n");
+	printf("\nEccBackUpKeyPair success\n\n");
 	
-	*/
+
 
 	rv =ExportKeyPair(phSessionHandle);
 	if(rv != SDR_OK)

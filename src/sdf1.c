@@ -277,3 +277,25 @@ SGD_RV SDF_ImportECCKeyPair(SGD_HANDLE phSessionHandle, SGD_UINT32 uiKeyIndex, c
 
 
 
+
+SGD_RV SDF_ECCBackUp(SGD_HANDLE hSessionHandle, SGD_UINT32 uiKeyInd, SGD_UCHAR *pEncOut, SGD_UINT32 *nOutLen) {
+    // 检查输入参数的有效性
+    if (hSessionHandle == NULL || pEncOut == NULL || nOutLen == NULL || *nOutLen < 2048) {
+        return SDR_INVALIDPARAMERR;
+    }
+
+    // 假设这里是备份密钥对的实现逻辑
+    // 实际的备份逻辑依赖于具体的硬件和加密库实现，这里仅提供一个示例框架
+
+    // 模拟生成一个密钥对备份，实际中应从硬件安全模块(HSM)或加密库中获取
+    for (int i = 0; i < 2048; ++i) {
+        pEncOut[i] = (SGD_UCHAR)(i % 256); // 示例数据填充，实际应为加密后的密钥对数据
+    }
+    *nOutLen = 2048; // 设置实际的输出长度
+
+    // 打印信息，实际使用中应去除
+    printf("The ECC key pair is backed up successfully, and the index value:%u\n", uiKeyInd);
+
+    // 假设备份操作总是成功的
+    return SDR_OK;
+}

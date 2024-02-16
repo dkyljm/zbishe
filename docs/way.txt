@@ -1,2 +1,2 @@
-gcc -o test1 test/main.c src/sdf.c  -I include/sdf.h  -lpthread 
+gcc -o test1 test/main1.c src/sdf1.c  -I include/sdf.h  -lpthread 
 
