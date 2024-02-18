@@ -124,20 +124,45 @@ SGD_RV SDF_GenerateKeyPair_ECC(SGD_HANDLE hSessionHandle, SGD_UINT32 uiAlgID, SG
 
 
 // 示例实现 SDF_ExportECCPubKey 函数
-SGD_RV SDF_ExportECCPubKey(SGD_HANDLE hSessionHandle, SGD_UINT32 uiKeyInd, SGD_UCHAR *pPubKeyEnc) {
-    // 这里应该是导出 ECC 公钥的代码
-    // 由于没有具体的 ECC 公钥导出细节，我们只返回成功
-    memset(pPubKeyEnc, 0xA5, ECCref_MAX_LEN * 2); // 填充示例数据
+// 假设已经有了sdf.h头文件和test.c中的相关调用，下面是sdf.c中实现ExportKeyPair函数所需的代码示例。
 
+SGD_RV SDF_ExportECCPubKey(SGD_HANDLE phSessionHandle, SGD_UINT32 uiKeyIndex, SGD_UCHAR *pucPublicKey)
+{
+    // 检查参数有效性
+    if (!phSessionHandle || !pucPublicKey || uiKeyIndex < 1 || uiKeyIndex > MAX_KEY_INDEX) {
+        return SDR_INVALIDPARAMERR;
+    }
+
+    // 模拟从设备或会话中导出ECC公钥的过程
+    // 实际实现中，这里应该是从安全存储中读取指定索引的公钥
+    printf("导出索引为 %u 的ECC公钥\n", uiKeyIndex);
+
+    // 假设公钥是固定的，仅作为示例
+    for (int i = 0; i < 64; ++i) {
+        pucPublicKey[i] = i;
+    }
+
+    // 假设操作总是成功的
     return SDR_OK;
 }
 
-// 示例实现 SDF_ExportECCPriKey 函数
-SGD_RV SDF_ExportECCPriKey(SGD_HANDLE hSessionHandle, SGD_UINT32 uiKeyInd, SGD_UCHAR *pPriKeyEnc) {
-    // 这里应该是导出 ECC 私钥的代码
-    // 由于没有具体的 ECC 私钥导出细节，我们只返回成功
-    memset(pPriKeyEnc, 0xA5, ECCref_MAX_LEN); // 填充示例数据
+SGD_RV SDF_ExportECCPriKey(SGD_HANDLE phSessionHandle, SGD_UINT32 uiKeyIndex, SGD_UCHAR *pucPrivateKey)
+{
+    // 检查参数有效性
+    if (!phSessionHandle || !pucPrivateKey || uiKeyIndex < 1 || uiKeyIndex > MAX_KEY_INDEX) {
+        return SDR_INVALIDPARAMERR;
+    }
 
+    // 模拟从设备或会话中导出ECC私钥的过程
+    // 实际实现中，这里应该是从安全存储中读取指定索引的私钥
+    printf("导出索引为 %u 的ECC私钥\n", uiKeyIndex);
+
+    // 假设私钥是固定的，仅作为示例
+    for (int i = 0; i < 32; ++i) {
+        pucPrivateKey[i] = i;
+    }
+
+    // 假设操作总是成功的
     return SDR_OK;
 }
 
@@ -297,5 +322,61 @@ SGD_RV SDF_ECCBackUp(SGD_HANDLE hSessionHandle, SGD_UINT32 uiKeyInd, SGD_UCHAR *
     printf("The ECC key pair is backed up successfully, and the index value:%u\n", uiKeyInd);
 
     // 假设备份操作总是成功的
+    return SDR_OK;
+}
+
+
+
+
+
+// 假设已经有了sdf.h头文件和test.c中的相关调用，下面是sdf.c中实现SGD_SM3Hash函数所需的代码示例。
+
+SGD_RV SDF_HashInit(SGD_HANDLE phSessionHandle, SGD_UINT32 uiAlgID, ECCrefPublicKey *pucPublicKey, SGD_UCHAR *pucID, SGD_UINT32 uiIDLength)
+{
+    // 检查参数有效性
+    if (!phSessionHandle || (uiAlgID != SGD_SM3 && uiAlgID != SGD_SHA1 && uiAlgID != SGD_SHA256)) {
+        return SDR_INVALIDPARAMERR;
+    }
+
+    // 模拟初始化哈希算法的过程
+    printf("Initializing hash algorithm with ID %u\n", uiAlgID);
+
+    // 假设操作总是成功的
+    return SDR_OK;
+}
+
+SGD_RV SDF_HashUpdate(SGD_HANDLE phSessionHandle, SGD_UCHAR *pucData, SGD_UINT32 uiDataLength)
+{
+    // 检查参数有效性
+    if (!phSessionHandle || !pucData || uiDataLength == 0) {
+        return SDR_INVALIDPARAMERR;
+    }
+
+    // 模拟更新哈希过程的操作
+    printf("Updating hash with data of length %u\n", uiDataLength);
+
+    // 假设操作总是成功的
+    return SDR_OK;
+}
+
+SGD_RV SDF_HashFinal(SGD_HANDLE phSessionHandle, SGD_UCHAR *pucHash, SGD_UINT32 *puiHashLength)
+{
+    // 检查参数有效性
+    if (!phSessionHandle || !pucHash || !puiHashLength) {
+        return SDR_INVALIDPARAMERR;
+    }
+
+    // 模拟完成哈希计算的过程
+    printf("Finalizing hash computation\n");
+
+    // 假设哈希值长度固定为32字节（例如，对于SM3）
+    *puiHashLength = 32;
+
+    // 填充一个假的哈希值，仅作为示例
+    for (int i = 0; i < *puiHashLength; ++i) {
+        pucHash[i] = (SGD_UCHAR)(i % 256);
+    }
+
+    // 假设操作总是成功的
     return SDR_OK;
 }

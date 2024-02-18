@@ -807,8 +807,12 @@ SGD_RV SM4_ENC_DEC_IPSEC(SGD_HANDLE phSessionHandle,SGD_HANDLE phKeyHandle)
 	return SDR_OK;
 }
 
+*/
+
 SGD_RV SGD_SM3Hash(SGD_HANDLE phSessionHandle)
 {
+	
+	printf("Entering SGD_SM3Hash\n");
 	SGD_RV rv = SDR_OK;
 	ECCrefPublicKey phPubKey;
 	memcpy(phPubKey.x,pubKey,32);
@@ -844,7 +848,7 @@ SGD_RV SGD_SM3Hash(SGD_HANDLE phSessionHandle)
 	return SDR_OK;
 
 }
-*/
+
 
 SGD_RV SM2EncDec(SGD_HANDLE phSessionHandle)
 {
@@ -1161,13 +1165,13 @@ int main(int argc, char *argv[])
 	rv =ExportKeyPair(phSessionHandle);
 	if(rv != SDR_OK)
 	{
-		printf("ExportKeyPair fail\n");
+		printf("\nExportKeyPair fail\n\n");
 		goto err;
 	}
-	printf("ExportKeyPair success\n");
+	printf("\nExportKeyPair success\n\n");
 	
 	
-	/*
+	
 	rv =SGD_SM3Hash(phSessionHandle);
 	if(rv != SDR_OK)
 	{
@@ -1176,7 +1180,7 @@ int main(int argc, char *argv[])
 	} 
 	printf("SGD_SM3Hash success\n");
 	
-	*/
+	
 	
 	
 	rv = SM2EncDec(phSessionHandle);
