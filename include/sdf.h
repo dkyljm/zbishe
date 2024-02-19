@@ -235,6 +235,11 @@ SGD_RV SDF_ImportRootKeyAndDeviceSN(SGD_HANDLE hSessionHandle,SGD_UINT8 * rootKe
 */
 SGD_RV SDF_GetDeviceInfo(SGD_HANDLE hSessionHandle, DEVICEINFO *pstDeviceInfo);
 
+
+
+
+
+
 /*
 产生ECC密钥对并输出
 描述:请求密码设备产生指定类型和模长的ECC密钥对,此接口暂时只支持产生SM2密钥对。

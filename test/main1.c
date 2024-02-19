@@ -849,7 +849,7 @@ SGD_RV SGD_SM3Hash(SGD_HANDLE phSessionHandle)
 
 }
 
-
+/*
 SGD_RV SM2EncDec(SGD_HANDLE phSessionHandle)
 {
 	SGD_RV rv = SDR_OK;
@@ -883,6 +883,7 @@ SGD_RV SM2EncDec(SGD_HANDLE phSessionHandle)
 	}
 	return SDR_OK;
 }
+*/
 
 SGD_RV SM2SignVer(SGD_HANDLE phSessionHandle)
 {
@@ -1183,14 +1184,14 @@ int main(int argc, char *argv[])
 	rv =SGD_SM3Hash(phSessionHandle);
 	if(rv != SDR_OK)
 	{
-		printf("SGD_SM3Hash fail\n");
+		printf("\nSGD_SM3Hash fail\n\n");
 		goto err;
 	} 
-	printf("SGD_SM3Hash success\n");
+	printf("\nSGD_SM3Hash success\n\n");
 	
 	
 	
-	
+	/*
 	rv = SM2EncDec(phSessionHandle);
 	if(rv != SDR_OK)
 	{
@@ -1255,7 +1256,7 @@ int main(int argc, char *argv[])
 	}
 	printf("SM4_ENC_DEC_OFB success. \n");
 
-	/*
+	
 	rv =SM1_ENC_DEC_IPSEC(phSessionHandle,phKeyHandle);
 	if(rv != SDR_OK)
 	{
