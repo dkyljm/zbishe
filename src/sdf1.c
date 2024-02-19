@@ -5,6 +5,11 @@
 #define MAX_KEY_INDEX 100 // 或者根据实际情况设置合适的值
 
 
+extern const SGD_UCHAR pubKey[64];
+extern const SGD_UCHAR priKey[32];
+
+
+
 // 示例实现 SDF_OpenDevice 函数
 SGD_RV SDF_OpenDevice(SGD_HANDLE *phDeviceHandle) {
     // 这里应该是打开设备的代码
@@ -130,6 +135,7 @@ SGD_RV SDF_ExportECCPubKey(SGD_HANDLE phSessionHandle, SGD_UINT32 uiKeyIndex, SG
 {
     // 检查参数有效性
     if (!phSessionHandle || !pucPublicKey || uiKeyIndex < 1 || uiKeyIndex > MAX_KEY_INDEX) {
+        printf("Invalid parameters\n");
         return SDR_INVALIDPARAMERR;
     }
 
@@ -137,12 +143,10 @@ SGD_RV SDF_ExportECCPubKey(SGD_HANDLE phSessionHandle, SGD_UINT32 uiKeyIndex, SG
     // 实际实现中，这里应该是从安全存储中读取指定索引的公钥
     printf("导出索引为 %u 的ECC公钥\n", uiKeyIndex);
 
-    // 假设公钥是固定的，仅作为示例
-    for (int i = 0; i < 64; ++i) {
-        pucPublicKey[i] = i;
-    }
+    // 公钥
+    memcpy(pucPublicKey, pubKey, sizeof(pubKey));
 
-    // 假设操作总是成功的
+
     return SDR_OK;
 }
 
@@ -150,19 +154,18 @@ SGD_RV SDF_ExportECCPriKey(SGD_HANDLE phSessionHandle, SGD_UINT32 uiKeyIndex, SG
 {
     // 检查参数有效性
     if (!phSessionHandle || !pucPrivateKey || uiKeyIndex < 1 || uiKeyIndex > MAX_KEY_INDEX) {
+        printf("Invalid parameters\n");
         return SDR_INVALIDPARAMERR;
     }
 
     // 模拟从设备或会话中导出ECC私钥的过程
-    // 实际实现中，这里应该是从安全存储中读取指定索引的私钥
+    // 从安全存储中读取指定索引的私钥
     printf("导出索引为 %u 的ECC私钥\n", uiKeyIndex);
 
-    // 假设私钥是固定的，仅作为示例
-    for (int i = 0; i < 32; ++i) {
-        pucPrivateKey[i] = i;
-    }
+    // 将存储的私钥复制到提供的缓冲区中
+	memcpy(pucPrivateKey, priKey, sizeof(priKey));
 
-    // 假设操作总是成功的
+    // 操作成功的
     return SDR_OK;
 }
 

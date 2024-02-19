@@ -935,6 +935,7 @@ SGD_RV ExportKeyPair(SGD_HANDLE phSessionHandle)
 {
 	SGD_RV rv = SDR_OK;
 	SGD_UCHAR pucPubKey[64];
+	
 	rv = SDF_ExportECCPubKey(phSessionHandle,1,pucPubKey);
 	if(SDR_OK != rv)
 	{
@@ -944,7 +945,7 @@ SGD_RV ExportKeyPair(SGD_HANDLE phSessionHandle)
 
 	if(memcmp(pucPubKey,pubKey,64))
 	{
-		printf("pubKey diff \n");
+		printf("pubKey1 diff \n");
 		return -1;
 	}
 
@@ -968,7 +969,7 @@ SGD_RV ExportKeyPair(SGD_HANDLE phSessionHandle)
 
 	if(memcmp(pucPriKey,pucEncData,32))
 	{
-		printf("priKey diff \n");
+		printf("priKey2 diff \n");
 		return -1;
 	}
 
@@ -1160,6 +1161,13 @@ int main(int argc, char *argv[])
 	}
 	printf("\nEccBackUpKeyPair success\n\n");
 	
+
+
+
+
+
+
+
 
 
 	rv =ExportKeyPair(phSessionHandle);
