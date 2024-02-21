@@ -1,2 +1,4 @@
 gcc -o test1 test/main1.c src/sdf1.c  -I include/sdf.h  -lpthread 
 
+gcc -o test1 test/main1.c src/sdf1.c  -I include/sdf.h  -lpthread -lcrypto
+//保证正确链接openssl库 “-lcrypto”

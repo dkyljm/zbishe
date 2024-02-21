@@ -849,7 +849,7 @@ SGD_RV SGD_SM3Hash(SGD_HANDLE phSessionHandle)
 
 }
 
-/*
+
 SGD_RV SM2EncDec(SGD_HANDLE phSessionHandle)
 {
 	SGD_RV rv = SDR_OK;
@@ -867,7 +867,7 @@ SGD_RV SM2EncDec(SGD_HANDLE phSessionHandle)
 		return rv;
 	}
 
-	SGD_UCHAR pucDecData[1025] ={0};
+	SGD_UCHAR pucDecData[32] ={0};
 	SGD_UINT32 uiDecDataLen = sizeof(pucDecData);
 
 	rv = SDF_InternalDecrypt_ECC(phSessionHandle,1,SGD_SM2_3,&Cipher,pucDecData,&uiDecDataLen);
@@ -883,7 +883,7 @@ SGD_RV SM2EncDec(SGD_HANDLE phSessionHandle)
 	}
 	return SDR_OK;
 }
-*/
+
 
 SGD_RV SM2SignVer(SGD_HANDLE phSessionHandle)
 {
@@ -1089,13 +1089,13 @@ int main(int argc, char *argv[])
 	
 	// 测试获取设备信息
 	printf("Testing getting device information...\n");
-    rv = Test_GetDeviceInfo(phSessionHandle);
-    if(rv != SDR_OK) {
-        printf("Get device information failed with error code: %08x\n", rv);
-    } else {
-        printf("Get device information success.\n");
-    }
-    printf("\n");
+    	rv = Test_GetDeviceInfo(phSessionHandle);
+    	if(rv != SDR_OK) {
+        	printf("Get device information failed with error code: %08x\n", rv);
+    	} else {
+        	printf("Get device information success.\n");
+    	}
+    	printf("\n");
 	
 	rv = SDF_GenerateRandom(phSessionHandle, pOutRand, ulRandLen);
 	if(rv != SDR_OK)
@@ -1191,7 +1191,7 @@ int main(int argc, char *argv[])
 	
 	
 	
-	/*
+	
 	rv = SM2EncDec(phSessionHandle);
 	if(rv != SDR_OK)
 	{
@@ -1256,7 +1256,7 @@ int main(int argc, char *argv[])
 	}
 	printf("SM4_ENC_DEC_OFB success. \n");
 
-	
+	/*
 	rv =SM1_ENC_DEC_IPSEC(phSessionHandle,phKeyHandle);
 	if(rv != SDR_OK)
 	{
