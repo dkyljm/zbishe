@@ -182,23 +182,6 @@ SGD_RV SDF_ExportECCPriKey(SGD_HANDLE phSessionHandle, SGD_UINT32 uiKeyIndex, SG
     return SDR_OK;
 }
 
-// 示例实现 SDF_InternalSign_ECC 函数
-SGD_RV SDF_InternalSign_ECC(SGD_HANDLE hSessionHandle, SGD_UINT32 uiISKIndex, SGD_UCHAR *pucData, SGD_UINT32 uiDataLength, ECCSignature *pucSignature) {
-    // 这里应该是 ECC 签名的代码
-    // 由于没有具体的 ECC 签名细节，我们只返回成功
-    memset(pucSignature->r, 0xA5, ECCref_MAX_LEN); // 填充示例数据
-    memset(pucSignature->s, 0xA5, ECCref_MAX_LEN); // 填充示例数据
-
-    return SDR_OK;
-}
-
-// 示例实现 SDF_InternalVerify_ECC 函数
-SGD_RV SDF_InternalVerify_ECC(SGD_HANDLE hSessionHandle, SGD_UINT32 uiISKIndex, SGD_UCHAR *pucData, SGD_UINT32 uiDataLength, ECCSignature *pucSignature) {
-    // 这里应该是 ECC 验签的代码
-    // 由于没有具体的 ECC 验签细节，我们只返回成功
-
-    return SDR_OK;
-}
 
 
 
@@ -472,3 +455,141 @@ SGD_RV SDF_InternalDecrypt_ECC(SGD_HANDLE hSessionHandle, SGD_UINT32 uiISKIndex,
     printf("SDF_InternalDecrypt_ECC success\n");
     return SDR_OK;
 }
+
+// 示例实现 SDF_InternalSign_ECC 函数
+SGD_RV SDF_InternalSign_ECC(SGD_HANDLE hSessionHandle, SGD_UINT32 uiISKIndex, SGD_UCHAR *pucData, SGD_UINT32 uiDataLength, ECCSignature *pucSignature) {
+    // 这里应该是 ECC 签名的代码
+    // 由于没有具体的 ECC 签名细节，我们只返回成功
+    memset(pucSignature->r, 0xA5, ECCref_MAX_LEN); // 填充示例数据
+    memset(pucSignature->s, 0xA5, ECCref_MAX_LEN); // 填充示例数据
+
+    return SDR_OK;
+}
+
+// 示例实现 SDF_InternalVerify_ECC 函数
+SGD_RV SDF_InternalVerify_ECC(SGD_HANDLE hSessionHandle, SGD_UINT32 uiISKIndex, SGD_UCHAR *pucData, SGD_UINT32 uiDataLength, ECCSignature *pucSignature) {
+    // 这里应该是 ECC 验签的代码
+    // 由于没有具体的 ECC 验签细节，我们只返回成功
+
+    return SDR_OK;
+}
+
+/*
+// 实现SDF_InternalSign_ECC函数
+SGD_RV SDF_InternalSign_ECC(SGD_HANDLE hSessionHandle, SGD_UINT32 uiISKIndex, SGD_UCHAR *pucData, SGD_UINT32 uiDataLength, ECCSignature *pucSignature) {
+    if (pucData == NULL || pucSignature == NULL) {
+        return SDR_INVALIDPARAMERR;
+    }
+
+    // 这里简化处理，直接使用OpenSSL库进行签名
+    EVP_PKEY *pkey = EVP_PKEY_new();
+    EVP_PKEY_assign_SM2(pkey, NULL); // 这里应该是加载实际的私钥
+    EVP_MD_CTX *md_ctx = EVP_MD_CTX_new();
+    EVP_PKEY_CTX *pkey_ctx = NULL;
+    size_t siglen = ECCref_MAX_LEN * 2;
+    unsigned char sig[siglen];
+    memset(sig, 0, siglen);
+
+    if (EVP_DigestSignInit(md_ctx, &pkey_ctx, EVP_sm3(), NULL, pkey) <= 0) {
+        EVP_PKEY_free(pkey);
+        EVP_MD_CTX_free(md_ctx);
+        return SDR_UNKNOWERR;
+    }
+
+    if (EVP_DigestSign(md_ctx, sig, &siglen, pucData, uiDataLength) <= 0) {
+        EVP_PKEY_free(pkey);
+        EVP_MD_CTX_free(md_ctx);
+        return SDR_UNKNOWERR;
+    }
+
+    memcpy(pucSignature->r, sig, ECCref_MAX_LEN);
+    memcpy(pucSignature->s, sig + ECCref_MAX_LEN, ECCref_MAX_LEN);
+
+    EVP_PKEY_free(pkey);
+    EVP_MD_CTX_free(md_ctx);
+
+    return SDR_OK;
+}
+
+// 实现SDF_InternalVerify_ECC函数
+SGD_RV SDF_InternalVerify_ECC(SGD_HANDLE hSessionHandle, SGD_UINT32 uiISKIndex, SGD_UCHAR *pucData, SGD_UINT32 uiDataLength, ECCSignature *pucSignature) {
+    if (pucData == NULL || pucSignature == NULL) {
+        return SDR_INVALIDPARAMERR;
+    }
+
+    // 这里简化处理，直接使用OpenSSL库进行验证
+    EVP_PKEY *pkey = EVP_PKEY_new();
+    EVP_PKEY_assign_SM2(pkey, NULL); // 这里应该是加载实际的公钥
+    EVP_MD_CTX *md_ctx = EVP_MD_CTX_new();
+    EVP_PKEY_CTX *pkey_ctx = NULL;
+    unsigned char sig[ECCref_MAX_LEN * 2];
+    memcpy(sig, pucSignature->r, ECCref_MAX_LEN);
+    memcpy(sig + ECCref_MAX_LEN, pucSignature->s, ECCref_MAX_LEN);
+
+    if (EVP_DigestVerifyInit(md_ctx, &pkey_ctx, EVP_sm3(), NULL, pkey) <= 0) {
+        EVP_PKEY_free(pkey);
+        EVP_MD_CTX_free(md_ctx);
+            EVP_MD_CTX_free(md_ctx);
+    return SDR_UNKNOWERR;
+}
+
+if (EVP_DigestVerify(md_ctx, sig, ECCref_MAX_LEN * 2, pucData, uiDataLength) <= 0) {
+    EVP_PKEY_free(pkey);
+    EVP_MD_CTX_free(md_ctx);
+    return SDR_VERIFYERR;
+}
+
+EVP_PKEY_free(pkey);
+EVP_MD_CTX_free(md_ctx);
+
+return SDR_OK;
+}
+*/
+
+
+// 假设的SM1加密和解密函数，实际应用中应替换为真实的加密解密库调用
+void FakeSM1Encrypt(const SGD_UCHAR* key, const SGD_UCHAR* iv, const SGD_UCHAR* input, size_t inputLen, SGD_UCHAR* output) {
+    // 这里仅为示例，实际加密过程应使用SM1算法实现
+    memcpy(output, input, inputLen); // 简化处理，直接复制数据
+}
+
+void FakeSM1Decrypt(const SGD_UCHAR* key, const SGD_UCHAR* iv, const SGD_UCHAR* input, size_t inputLen, SGD_UCHAR* output) {
+    // 这里仅为示例，实际解密过程应使用SM1算法实现
+    memcpy(output, input, inputLen); // 简化处理，直接复制数据
+}
+
+// 实现SDF_Encrypt_IPSEC函数
+SGD_RV SDF_Encrypt_IPSEC(SGD_HANDLE hSessionHandle, SGD_UCHAR *pucEncKey, SGD_UINT32 uiAlgID, SGD_UCHAR *pucIV, SGD_UCHAR *HMACKEY, SGD_UINT32 HMACKEYLEN, SGD_UCHAR *pucData, SGD_UINT32 uiDataLen, SGD_UCHAR *pucEncData, SGD_UINT32 *puiEncDataLen) {
+    // 参数检查略
+    FakeSM1Encrypt(pucEncKey, pucIV, pucData, uiDataLen, pucEncData);
+    // 假设加密后数据长度不变
+    *puiEncDataLen = uiDataLen;
+    return SDR_OK;
+}
+
+// 实现SDF_Decrypt_IPSEC函数
+SGD_RV SDF_Decrypt_IPSEC(SGD_HANDLE hSessionHandle, SGD_UCHAR *pucDecKey, SGD_UINT32 uiAlgID, SGD_UCHAR *pucIV, SGD_UCHAR *HMACKEY, SGD_UINT32 HMACKEYLEN, SGD_UCHAR *pucEncData, SGD_UINT32 uiEncDataLen, SGD_UCHAR *pucOutputData, SGD_UINT32 *puiOutputDataLen) {
+    // 参数检查略
+    FakeSM1Decrypt(pucDecKey, pucIV, pucEncData, uiEncDataLen, pucOutputData);
+    // 假设解密后数据长度不变
+    *puiOutputDataLen = uiEncDataLen;
+    return SDR_OK;
+}
+
+
+// 实现SDF_Encrypt_IPSEC函数
+SGD_RV SDF_Encrypt_IPSEC(SGD_HANDLE phSessionHandle, SGD_UCHAR *pucEncKey, SGD_UINT32 uiAlgID, SGD_UCHAR *pucIV, SGD_UCHAR *HMACKEY, SGD_UINT32 HMACKEYLEN, SGD_UCHAR *pucData, SGD_UINT32 uiDataLen, SGD_UCHAR *pucEncData, SGD_UINT32 *puiEncDataLen) {
+    if (uiAlgID != SGD_IPSEC_SM4) {
+        return SDR_NOTSUPPORT;
+    }
+    // 这里简化处理，直接调用SM4加密函数
+    sm4_context ctx;
+    sm4_setkey_enc(&ctx, pucEncKey);
+    sm4_crypt_ecb(&ctx, 1, uiDataLen, pucData, pucEncData);
+    *puiEncDataLen = uiDataLen; // 假设加密后数据长度不变
+    return SDR_OK;
+}
+
+
+
+

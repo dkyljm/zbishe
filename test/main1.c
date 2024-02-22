@@ -571,7 +571,7 @@ SGD_RV SM4_ENC_DEC_OFB(SGD_HANDLE phSessionHandle,SGD_HANDLE phKeyHandle)
 	return SDR_OK;
 }
 
-/*
+
 SGD_RV SM1_ENC_DEC_IPSEC(SGD_HANDLE phSessionHandle,SGD_HANDLE phKeyHandle)
 {
 	SGD_RV rv = SDR_OK;	
@@ -690,7 +690,7 @@ SGD_RV SM1_ENC_DEC_IPSEC(SGD_HANDLE phSessionHandle,SGD_HANDLE phKeyHandle)
 
 
 
-
+/*
 SGD_RV SM4_ENC_DEC_IPSEC(SGD_HANDLE phSessionHandle,SGD_HANDLE phKeyHandle)
 {
 	SGD_RV rv = SDR_OK;	
@@ -806,8 +806,8 @@ SGD_RV SM4_ENC_DEC_IPSEC(SGD_HANDLE phSessionHandle,SGD_HANDLE phKeyHandle)
 	free(pucTmpMacData);
 	return SDR_OK;
 }
-
 */
+
 
 SGD_RV SGD_SM3Hash(SGD_HANDLE phSessionHandle)
 {
@@ -1256,7 +1256,7 @@ int main(int argc, char *argv[])
 	}
 	printf("SM4_ENC_DEC_OFB success. \n");
 
-	/*
+	
 	rv =SM1_ENC_DEC_IPSEC(phSessionHandle,phKeyHandle);
 	if(rv != SDR_OK)
 	{
@@ -1265,6 +1265,7 @@ int main(int argc, char *argv[])
 	}
 	printf("SM1_ENC_DEC_IPSEC success. \n");
 
+/*
 	rv =SM4_ENC_DEC_IPSEC(phSessionHandle,phKeyHandle);
 	if(rv != SDR_OK)
 	{
@@ -1272,7 +1273,7 @@ int main(int argc, char *argv[])
 		goto err;
 	}
 	printf("SM4_ENC_DEC_IPSEC success.\n");
-	*/
+*/	
 
 
 err:
