@@ -351,22 +351,35 @@ SGD_RV SDF_ImportECCKeyPair(SGD_HANDLE hSessionHandle, SGD_UINT32 uiKeyInd,
 
 SGD_RV SDF_ECCBackUp(SGD_HANDLE hSessionHandle, SGD_UINT32 uiKeyInd,
                      SGD_UCHAR *pEncOut, SGD_UINT32 *nOutLen) {
+   SGD_UINT32 requiredSize = 128;
   // 检查输入参数的有效性
   if (hSessionHandle == NULL || pEncOut == NULL || nOutLen == NULL ||
       *nOutLen < 2048) {
     return SDR_INVALIDPARAMERR;
   }
+	extern SGD_UCHAR pubKeyEnc[64], priKeyEnc[32], eccXYDHash[32];
+// 1. 将加密的私钥复制到输出缓冲区
+    memcpy(pEncOut, priKeyEnc, 32);
+    // 2. 将加密的公钥复制到输出缓冲区紧接私钥后
+    memcpy(pEncOut + 32, pubKeyEnc, 64);
+    // 3. 最后，将密钥对的明文HASH值复制到输出缓冲区紧接公钥后
+    memcpy(pEncOut + 32 + 64, eccXYDHash, 32);
 
-  // 假设这里是备份密钥对的实现逻辑
-  // 实际的备份逻辑依赖于具体的硬件和加密库实现，这里仅提供一个示例框架
+    // 更新输出数据的实际长度
+    *nOutLen = requiredSize;
+    
+	// 输出SM2密钥对XYD和密钥对明文HASH值
+    printf("SM2 Key Pair XYD: ");
+    for (int i = 0; i < 64; i++) {
+        printf("%02X", pEncOut[i]);
+    }
+    printf("\n");
 
-  // 模拟生成一个密钥对备份，实际中应从硬件安全模块(HSM)或加密库中获取
-  for (int i = 0; i < 2048; ++i) {
-    pEncOut[i] =
-        (SGD_UCHAR)(i % 256); // 示例数据填充，实际应为加密后的密钥对数据
-  }
-  *nOutLen = 2048; // 设置实际的输出长度
-
+    printf("Key Pair Plaintext HASH: ");
+    for (int i = 0; i < 32; i++) {
+        printf("%02X", pEncOut[64 + 32 + i]);
+    }
+    printf("\n");
   // 打印信息，实际使用中应去除
   printf("The ECC key pair is backed up successfully, and the index value:%u\n",
          uiKeyInd);
