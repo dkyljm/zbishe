@@ -1,8 +1,8 @@
 /*************************************************************************
-        > File Name: test.c
-        > Author:
+        > File Name: main1.c
+        > Author:ljm
         > Mail:
-        > Created Time: 2018年04月26日 星期四 16时01分52秒
+        > Created Time: 2024年04月26日 星期四 16时01分52秒
  ************************************************************************/
 
 #include "../include/sdf.h"
@@ -806,26 +806,30 @@ SGD_RV SGD_SM3Hash(SGD_HANDLE phSessionHandle) {
   memcpy(phPubKey.x, pubKey, 32);
   memcpy(phPubKey.y, pubKey + 32, 32);
 
+// 哈希过程中使用的数据和ID
   SGD_UCHAR pucID[16] = {0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08,
                          0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08};
   SGD_UINT32 uiIDLen = 16;
 
   SGD_UINT8 pucData[16] = {0};
   memset(pucData, 0x05, 16);
-  SGD_UINT32 uiPucDateLen = 16;
+  SGD_UINT32 uiPucDateLen = 16;// 哈希过程中使用的数据和ID
 
+    // 初始化哈希运算，这里示例为不使用公钥和ID的初始化方式
   // rv = SDF_HashInit(phSessionHandle,SGD_SM3,&phPubKey,pucID,uiIDLen);
   rv = SDF_HashInit(phSessionHandle, SGD_SM3, NULL, NULL, 0);
   if (SDR_OK != rv) {
     return rv;
   }
 
+    // 对数据进行哈希更新
   rv = SDF_HashUpdate(phSessionHandle, pucData, uiPucDateLen);
   if (SDR_OK != rv) {
     return rv;
   }
   uiPucDateLen = 32;
 
+    // 完成哈希运算，获取最终的哈希值
   rv = SDF_HashFinal(phSessionHandle, sm3HashData, &uiPucDateLen);
   if (SDR_OK != rv) {
     return rv;
@@ -914,16 +918,19 @@ SGD_RV ExportKeyPair(SGD_HANDLE phSessionHandle) {
   SGD_RV rv = SDR_OK;
   SGD_UCHAR pucPubKey[64];
 
+  // 导出公钥并检查操作是否成功
   rv = SDF_ExportECCPubKey(phSessionHandle, 1, pucPubKey);
   if (SDR_OK != rv) {
     return rv;
   }
 
+  // 导出公钥并检查操作是否成功
   if (memcmp(pucPubKey, pubKey, 64)) {
     printf("pubKey1 diff \n");
     return -1;
   }
 
+  // 导出私钥并检查操作是否成功
   SGD_UCHAR pucPriKey[32];
   rv = SDF_ExportECCPriKey(phSessionHandle, 1, pucPriKey);
   if (SDR_OK != rv) {
@@ -935,6 +942,7 @@ SGD_RV ExportKeyPair(SGD_HANDLE phSessionHandle) {
   SGD_UCHAR pucEncData[100] = {0};
   SGD_UINT32 puiEncDataLength = 100;
 
+  // 使用ROOTKEY对私钥进行加密
   rv = SDF_Encrypt(phSessionHandle, (SGD_UINT8 *)ROOTKEY, SGD_SM1_CBC, pucIV,
                    priKey, 32, pucEncData, &puiEncDataLength);
   if (SDR_OK != rv) {

@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <openssl/evp.h>
 /*
 #include <openssl/bn.h>
 #include <openssl/ec.h>
@@ -16,6 +17,7 @@
 #include <string.h>
 
 #define MAX_KEY_INDEX 100 // 或者根据实际情况设置合适的值
+#define MAX_DATA_LENGTH 4096
 
 extern const SGD_UCHAR pubKey[64];
 extern const SGD_UCHAR priKey[32];
@@ -398,26 +400,46 @@ SGD_RV SDF_HashInit(SGD_HANDLE phSessionHandle, SGD_UINT32 uiAlgID,
       (uiAlgID != SGD_SM3 && uiAlgID != SGD_SHA1 && uiAlgID != SGD_SHA256)) {
     return SDR_INVALIDPARAMERR;
   }
+      // 检查会话句柄、公钥和用户ID的有效性
+    if (phSessionHandle == NULL || (pucPublicKey == NULL && pucID != NULL && uiIDLength > 0)) {
+        return SDR_INVALIDPARAMERR;
+    }
 
   // 模拟初始化哈希算法的过程
   printf("Initializing hash algorithm with ID %u\n", uiAlgID);
 
-  // 假设操作总是成功的
+  
   return SDR_OK;
 }
 
-SGD_RV SDF_HashUpdate(SGD_HANDLE phSessionHandle, SGD_UCHAR *pucData,
-                      SGD_UINT32 uiDataLength) {
-  // 检查参数有效性
-  if (!phSessionHandle || !pucData || uiDataLength == 0) {
-    return SDR_INVALIDPARAMERR;
-  }
+SGD_RV SDF_HashUpdate(SGD_HANDLE hSessionHandle, SGD_UCHAR *pucData, SGD_UINT32 uiDataLength) {
+    static EVP_MD_CTX *md_ctx = NULL;// 哈希运算的上下文，静态变量保持状态
+    static int initialized = 0;// 上下文初始化标志
 
-  // 模拟更新哈希过程的操作
-  printf("Updating hash with data of length %u\n", uiDataLength);
+    if (!pucData || uiDataLength == 0 || uiDataLength > MAX_DATA_LENGTH) {
+        return SDR_INVALIDPARAMERR;
+    }
 
-  // 假设操作总是成功的
-  return SDR_OK;
+    // 首次调用时初始化哈希上下文
+    if (!initialized) {
+        md_ctx = EVP_MD_CTX_new();// 创建新的摘要上下文
+        if (!md_ctx) {
+            return SDR_INVALIDPARAMERR;
+        }
+        if (EVP_DigestInit_ex(md_ctx, EVP_sm3(), NULL) != 1) {
+            EVP_MD_CTX_free(md_ctx);// 标记为已初始化
+            md_ctx = NULL;
+            return SDR_INVALIDPARAMERR;
+        }
+        initialized = 1;// 标记为已初始化
+    }
+
+   // 更新哈希运算的数据
+    if (EVP_DigestUpdate(md_ctx, pucData, uiDataLength) != 1) {
+        return SDR_INVALIDPARAMERR;
+    }
+
+    return SDR_OK;
 }
 
 SGD_RV SDF_HashFinal(SGD_HANDLE phSessionHandle, SGD_UCHAR *pucHash,
