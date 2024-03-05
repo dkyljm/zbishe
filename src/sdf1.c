@@ -206,7 +206,7 @@ SGD_RV SDF_GenerateKeyPair_ECC(SGD_HANDLE hSessionHandle, SGD_UINT32 uiAlgID,
 }
 
 // 示例实现 SDF_ExportECCPubKey 函数
-// 假设已经有了sdf.h头文件和test.c中的相关调用，下面是sdf.c中实现ExportKeyPair函数所需的代码示例。
+//ExportKeyPair函数所需的代码示例。
 
 SGD_RV SDF_ExportECCPubKey(SGD_HANDLE phSessionHandle, SGD_UINT32 uiKeyIndex,
                            SGD_UCHAR *pucPublicKey) {
@@ -386,12 +386,11 @@ SGD_RV SDF_ECCBackUp(SGD_HANDLE hSessionHandle, SGD_UINT32 uiKeyInd,
   printf("The ECC key pair is backed up successfully, and the index value:%u\n",
          uiKeyInd);
 
-  // 假设备份操作总是成功的
   return SDR_OK;
 }
 
-// 假设已经有了sdf.h头文件和test.c中的相关调用，下面是sdf.c中实现SGD_SM3Hash函数所需的代码示例。
 
+/*
 SGD_RV SDF_HashInit(SGD_HANDLE phSessionHandle, SGD_UINT32 uiAlgID,
                     ECCrefPublicKey *pucPublicKey, SGD_UCHAR *pucID,
                     SGD_UINT32 uiIDLength) {
@@ -405,7 +404,6 @@ SGD_RV SDF_HashInit(SGD_HANDLE phSessionHandle, SGD_UINT32 uiAlgID,
         return SDR_INVALIDPARAMERR;
     }
 
-  // 模拟初始化哈希算法的过程
   printf("Initializing hash algorithm with ID %u\n", uiAlgID);
 
   
@@ -442,76 +440,189 @@ SGD_RV SDF_HashUpdate(SGD_HANDLE hSessionHandle, SGD_UCHAR *pucData, SGD_UINT32 
     return SDR_OK;
 }
 
-SGD_RV SDF_HashFinal(SGD_HANDLE phSessionHandle, SGD_UCHAR *pucHash,
-                     SGD_UINT32 *puiHashLength) {
-  // 检查参数有效性
-  if (!phSessionHandle || !pucHash || !puiHashLength) {
-    return SDR_INVALIDPARAMERR;
-  }
+SGD_RV SDF_HashFinal(SGD_HANDLE hSessionHandle, SGD_UCHAR *pucHash, SGD_UINT32 *puiHashLength)
+{
+    
+    // 原文
+    unsigned char pucData[] = {
+        0x01, 0x23, 0x45, 0x67, 0x89, 0xab, 0xcd, 0xef,
+        0xfe, 0xdc, 0xba, 0x98, 0x76, 0x54, 0x32, 0x10
+    };
+    unsigned int uiDataLen = sizeof(pucData);
 
-  // 模拟完成哈希计算的过程
-  printf("Finalizing hash computation\n");
+    // 进行SM3加密
+    unsigned char sm3HashData[32];
+    SM3(pucData, uiDataLen, sm3HashData);
 
-  // 假设哈希值长度固定为32字节（例如，对于SM3）
-  *puiHashLength = 32;
+    // 输出原文和密文以及其长度
+    printf("原文：");
+    for (int i = 0; i < uiDataLen; i++) {
+        printf("%02x ", pucData[i]);
+    }
+    printf("\n");
 
-  // 填充一个假的哈希值，仅作为示例
-  for (int i = 0; i < *puiHashLength; ++i) {
-    pucHash[i] = (SGD_UCHAR)(i % 256);
-  }
+    printf("密文：");
+    for (int i = 0; i < 32; i++) {
+        printf("%02x ", sm3HashData[i]);
+    }
+    printf("\n");
 
-  // 假设操作总是成功的
-  return SDR_OK;
+    *puiHashLength = 32;
+    memcpy(pucHash, sm3HashData, *puiHashLength);
+
+    return SDR_OK;
 }
+
+//SM3算法hash加密
+void SM3(const unsigned char *data, size_t data_len, unsigned char *hash) {
+    EVP_MD_CTX *mdctx;
+    unsigned int md_len;
+
+    // 创建并初始化EVP_MD_CTX结构体
+    mdctx = EVP_MD_CTX_new();
+    EVP_MD_CTX_init(mdctx);
+
+    // 设置SM3算法
+    const EVP_MD *md = EVP_sm3();
+
+    // 初始化SM3哈希计算上下文
+    EVP_DigestInit_ex(mdctx, md, NULL);
+
+    // 更新数据
+    EVP_DigestUpdate(mdctx, data, data_len);
+
+    // 完成哈希计算，获取哈希值
+    EVP_DigestFinal_ex(mdctx, hash, &md_len);
+
+    // 销毁EVP_MD_CTX结构体
+    EVP_MD_CTX_destroy(mdctx);
+}
+*/
+
+
+SGD_RV SDF_HashInit(SGD_HANDLE phSessionHandle, SGD_UINT32 uiAlgID,
+                    ECCrefPublicKey *pucPublicKey, SGD_UCHAR *pucID,
+                    SGD_UINT32 uiIDLength) {
+    // 检查算法ID是否为SM3
+    if (uiAlgID != SGD_SM3) {
+        return SDR_NOTSUPPORT;
+    }
+
+    EVP_MD_CTX *mdctx = EVP_MD_CTX_new();
+    if (mdctx == NULL) {
+        return SDR_NOTSUPPORT;
+    }
+
+    const EVP_MD *md = EVP_sm3();
+    if (EVP_DigestInit_ex(mdctx, md, NULL) != 1) {
+        EVP_MD_CTX_free(mdctx);
+        return SDR_UNKNOWERR;
+    }
+
+    // 将上下文保存到会话句柄中
+    *(EVP_MD_CTX **)phSessionHandle = mdctx;
+
+    return SDR_OK;
+}
+
+SGD_RV SDF_HashUpdate(SGD_HANDLE hSessionHandle, SGD_UCHAR *pucData, SGD_UINT32 uiDataLength) {
+    EVP_MD_CTX *mdctx = *(EVP_MD_CTX **)hSessionHandle;
+
+    if (EVP_DigestUpdate(mdctx, pucData, uiDataLength) != 1) {
+        return SDR_UNKNOWERR;
+    }
+
+    return SDR_OK;
+}
+
+SGD_RV SDF_HashFinal(SGD_HANDLE hSessionHandle, SGD_UCHAR *pucHash, SGD_UINT32 *puiHashLength) {
+    EVP_MD_CTX *mdctx = *(EVP_MD_CTX **)hSessionHandle;
+    unsigned int md_len;
+
+    if (EVP_DigestFinal_ex(mdctx, pucHash, &md_len) != 1) {
+        return SDR_UNKNOWERR;
+    }
+
+    *puiHashLength = md_len;
+    EVP_MD_CTX_free(mdctx);
+
+    return SDR_OK;
+}
+
+
+
+// SM2加密函数
+SGD_RV SDF_InternalEncrypt_ECC(SGD_HANDLE hSessionHandle, SGD_UINT32 uiIPKIndex,
+                               SGD_UINT32 uiAlgID, SGD_UCHAR *pucData, SGD_UINT32 uiDataLength,
+                               ECCCipher *pucEncData) {
+    // 检查算法类型是否为 SGD_SM2_3
+    if (uiAlgID != SGD_SM2_3) {
+        return SDR_PARAMERR;
+    }
+
+    // 检查数据长度是否超出限制
+    if (uiDataLength > 136) {
+        return SDR_PARAMERR;
+    }
+
+    // 索引值检查
+    if (uiIPKIndex < 1 || uiIPKIndex > 8) {
+        return SDR_PARAMERR;
+    }
+
+    // 此处代码省略了具体的密钥加载逻辑，假设已经有了ECC的公钥和私钥
+
+    // 使用SM2算法进行加密
+    int ret = 0;
+    EC_KEY *ec_key = NULL;
+    const EVP_MD *digest = EVP_sm3();
+    size_t outlen = 0;
+
+    ec_key = EC_KEY_new_by_curve_name(NID_sm2);
+    if (!ec_key) {
+        return SDR_UNKNOWERR;
+    }
+
+    // 设置公钥
+    EC_POINT *pub_point = EC_POINT_new(EC_KEY_get0_group(ec_key));
+    BIGNUM *x = BN_new();
+    BIGNUM *y = BN_new();
+    BN_bin2bn(pubKey, 32, x);
+    BN_bin2bn(pubKey + 32, 32, y);
+    EC_POINT_set_affine_coordinates_GFp(EC_KEY_get0_group(ec_key), pub_point, x, y, NULL);
+    EC_KEY_set_public_key(ec_key, pub_point);
+
+    // SM2加密
+    unsigned char *ciphertext = OPENSSL_malloc(uiDataLength + 100); // 大小可能需要调整
+    if (!ciphertext) {
+        ret = SDR_NO_MEMORY;
+        goto clean_up;
+    }
+
+    if (!EVP_PKEY_encrypt_old(ciphertext, &outlen, pucData, uiDataLength, EVP_PKEY_new_from_EC_KEY(NULL, ec_key, NULL))) {
+        ret = SDR_UNKNOWERR;
+        goto clean_up;
+    }
+
+    // 将密文复制到输出结构
+    memcpy(pucEncData->C, ciphertext, outlen);
+    // 这里需要根据实际ECCCipher结构来填充其他字段，比如密文长度等
+
+    ret = SDR_OK;
+
+clean_up:
+    if (ec_key) EC_KEY_free(ec_key);
+    if (pub_point) EC_POINT_free(pub_point);
+    if (x) BN_free(x);
+    if (y) BN_free(y);
+    if (ciphertext) OPENSSL_free(ciphertext);
+
+    return ret;
+}
+
+
 
 /*
-SGD_RV SDF_InternalEncrypt_ECC(SGD_HANDLE hSessionHandle, SGD_UINT32 uiIPKIndex,
-SGD_UINT32 uiAlgID, SGD_UCHAR *pucData, SGD_UINT32 uiDataLength, ECCCipher
-*pucEncData) { if (!hSessionHandle || !pucData || !pucEncData || uiDataLength ==
-0) { printf("Invalid parameters\n"); return SDR_INVALIDPARAM;
-    }
-
-    // 初始化OpenSSL
-    EVP_PKEY *sm2Key = pucPublicKey; // 这里应该是从会话句柄或索引加载SM2公钥
-    // 假设sm2Key已经正确加载
-
-    size_t outlen = sizeof(pucEncData->X); // 确保输出缓冲区足够大
-    int ret = EVP_PKEY_encrypt_old(pucEncData->X, pucData, uiDataLength,
-sm2Key); if (ret <= 0) { printf("SM2 encryption failed\n");
-        EVP_PKEY_free(sm2Key);
-        return SDR_UNKNOWERR;
-    }
-    pucEncData->L = ret; // 设置加密数据长度
-    EVP_PKEY_free(sm2Key);
-
-    printf("SDF_InternalEncrypt_ECC success\n");
-    return SDR_OK;
-}
-
-SGD_RV SDF_InternalDecrypt_ECC(SGD_HANDLE hSessionHandle, SGD_UINT32 uiISKIndex,
-SGD_UINT32 uiAlgID, ECCCipher *pucEncData, SGD_UCHAR *pucData, SGD_UINT32
-*puiDataLength) { if (!hSessionHandle || !pucEncData || !pucData ||
-!puiDataLength) { printf("Invalid parameters\n"); return SDR_INVALIDPARAM;
-    }
-
-    // 初始化OpenSSL
-    EVP_PKEY *sm2Key = pucPrivateKey; // 这里应该是从会话句柄或索引加载SM2私钥
-    // 假设sm2Key已经正确加载
-
-    size_t outlen = *puiDataLength; // 确保输出缓冲区足够大
-    int ret = EVP_PKEY_decrypt_old(pucData, pucEncData->X, pucEncData->L,
-sm2Key); if (ret <= 0) { printf("SM2 decryption failed\n");
-        EVP_PKEY_free(sm2Key);
-        return SDR_UNKNOWERR;
-    }
-    *puiDataLength = ret; // 更新解密数据长度
-    EVP_PKEY_free(sm2Key);
-
-    printf("SDF_InternalDecrypt_ECC success\n");
-    return SDR_OK;
-}
-
-*/
 
 SGD_RV SDF_InternalEncrypt_ECC(SGD_HANDLE hSessionHandle, SGD_UINT32 uiIPKIndex,
                                SGD_UINT32 uiAlgID, SGD_UCHAR *pucData,
@@ -530,7 +641,7 @@ SGD_RV SDF_InternalEncrypt_ECC(SGD_HANDLE hSessionHandle, SGD_UINT32 uiIPKIndex,
   printf("SDF_InternalEncrypt_ECC success\n");
   return SDR_OK;
 }
-
+*/
 SGD_RV SDF_InternalDecrypt_ECC(SGD_HANDLE hSessionHandle, SGD_UINT32 uiISKIndex,
                                SGD_UINT32 uiAlgID, ECCCipher *pucEncData,
                                SGD_UCHAR *pucData, SGD_UINT32 *puiDataLength) {
@@ -548,6 +659,7 @@ SGD_RV SDF_InternalDecrypt_ECC(SGD_HANDLE hSessionHandle, SGD_UINT32 uiISKIndex,
   printf("SDF_InternalDecrypt_ECC success\n");
   return SDR_OK;
 }
+
 
 // 示例实现 SDF_InternalSign_ECC 函数
 SGD_RV SDF_InternalSign_ECC(SGD_HANDLE hSessionHandle, SGD_UINT32 uiISKIndex,
@@ -571,75 +683,8 @@ SGD_RV SDF_InternalVerify_ECC(SGD_HANDLE hSessionHandle, SGD_UINT32 uiISKIndex,
   return SDR_OK;
 }
 
-/*
-// 实现SDF_InternalSign_ECC函数
-SGD_RV SDF_InternalSign_ECC(SGD_HANDLE hSessionHandle, SGD_UINT32 uiISKIndex,
-SGD_UCHAR *pucData, SGD_UINT32 uiDataLength, ECCSignature *pucSignature) { if
-(pucData == NULL || pucSignature == NULL) { return SDR_INVALIDPARAMERR;
-    }
 
-    // 这里简化处理，直接使用OpenSSL库进行签名
-    EVP_PKEY *pkey = EVP_PKEY_new();
-    EVP_PKEY_assign_SM2(pkey, NULL); // 这里应该是加载实际的私钥
-    EVP_MD_CTX *md_ctx = EVP_MD_CTX_new();
-    EVP_PKEY_CTX *pkey_ctx = NULL;
-    size_t siglen = ECCref_MAX_LEN * 2;
-    unsigned char sig[siglen];
-    memset(sig, 0, siglen);
 
-    if (EVP_DigestSignInit(md_ctx, &pkey_ctx, EVP_sm3(), NULL, pkey) <= 0) {
-        EVP_PKEY_free(pkey);
-        EVP_MD_CTX_free(md_ctx);
-        return SDR_UNKNOWERR;
-    }
-
-    if (EVP_DigestSign(md_ctx, sig, &siglen, pucData, uiDataLength) <= 0) {
-        EVP_PKEY_free(pkey);
-        EVP_MD_CTX_free(md_ctx);
-        return SDR_UNKNOWERR;
-    }
-
-    memcpy(pucSignature->r, sig, ECCref_MAX_LEN);
-    memcpy(pucSignature->s, sig + ECCref_MAX_LEN, ECCref_MAX_LEN);
-
-    EVP_PKEY_free(pkey);
-    EVP_MD_CTX_free(md_ctx);
-
-    return SDR_OK;
-}
-
-// 实现SDF_InternalVerify_ECC函数
-SGD_RV SDF_InternalVerify_ECC(SGD_HANDLE hSessionHandle, SGD_UINT32 uiISKIndex,
-SGD_UCHAR *pucData, SGD_UINT32 uiDataLength, ECCSignature *pucSignature) { if
-(pucData == NULL || pucSignature == NULL) { return SDR_INVALIDPARAMERR;
-    }
-
-    // 这里简化处理，直接使用OpenSSL库进行验证
-    EVP_PKEY *pkey = EVP_PKEY_new();
-    EVP_PKEY_assign_SM2(pkey, NULL); // 这里应该是加载实际的公钥
-    EVP_MD_CTX *md_ctx = EVP_MD_CTX_new();
-    EVP_PKEY_CTX *pkey_ctx = NULL;
-    unsigned char sig[ECCref_MAX_LEN * 2];
-    memcpy(sig, pucSignature->r, ECCref_MAX_LEN);
-    memcpy(sig + ECCref_MAX_LEN, pucSignature->s, ECCref_MAX_LEN);
-
-    if (EVP_DigestVerifyInit(md_ctx, &pkey_ctx, EVP_sm3(), NULL, pkey) <= 0) {
-        EVP_PKEY_free(pkey);
-        EVP_MD_CTX_free(md_ctx);
-            EVP_MD_CTX_free(md_ctx);
-    return SDR_UNKNOWERR;
-}
-
-if (EVP_DigestVerify(md_ctx, sig, ECCref_MAX_LEN * 2, pucData, uiDataLength) <=
-0) { EVP_PKEY_free(pkey); EVP_MD_CTX_free(md_ctx); return SDR_VERIFYERR;
-}
-
-EVP_PKEY_free(pkey);
-EVP_MD_CTX_free(md_ctx);
-
-return SDR_OK;
-}
-*/
 
 // 假设的SM1加密和解密函数，实际应用中应替换为真实的加密解密库调用
 void FakeSM1Encrypt(const SGD_UCHAR *key, const SGD_UCHAR *iv,

@@ -834,10 +834,24 @@ SGD_RV SGD_SM3Hash(SGD_HANDLE phSessionHandle) {
   if (SDR_OK != rv) {
     return rv;
   }
+  
+      // 输出原文和哈希值
+    printf("原文: ");
+    for (int i = 0; i < uiIDLen; i++) {
+        printf("%02x", pucID[i]);
+    }
+    printf("\n");
+
+    printf("哈希值: ");
+    for (int i = 0; i < uiPucDateLen; i++) {
+        printf("%02x", sm3HashData[i]);
+    }
+    printf("\n");
 
   return SDR_OK;
 }
 
+// SM2加解密函数
 SGD_RV SM2EncDec(SGD_HANDLE phSessionHandle) {
   SGD_RV rv = SDR_OK;
 
@@ -846,6 +860,7 @@ SGD_RV SM2EncDec(SGD_HANDLE phSessionHandle) {
   memset(pucData, 0x05, sizeof(pucData));
   ECCCipher Cipher;
 
+  //SM2加密
   rv = SDF_InternalEncrypt_ECC(phSessionHandle, 1, SGD_SM2_3, pucData,
                                uiDataLen, &Cipher);
   if (SDR_OK != rv) {
@@ -856,16 +871,38 @@ SGD_RV SM2EncDec(SGD_HANDLE phSessionHandle) {
   SGD_UCHAR pucDecData[32] = {0};
   SGD_UINT32 uiDecDataLen = sizeof(pucDecData);
 
+  //SM2解密
   rv = SDF_InternalDecrypt_ECC(phSessionHandle, 1, SGD_SM2_3, &Cipher,
                                pucDecData, &uiDecDataLen);
   if (SDR_OK != rv) {
     printf("SDF_InternalDecrypt_ECC failed rv = %08x\n", rv);
     return rv;
   }
+   // 比较原始数据和解密后的数据是否一致
   if (memcmp(pucData, pucDecData, uiDecDataLen)) {
     printf("memcpy diff \n");
     return -1;
   }
+   // 输出加密后的数据
+    printf("Encrypted Data:\n");
+    printf("x: ");
+    for (int i = 0; i < sizeof(pucData.x); i++) {
+        printf("%02X ", encData.x[i]);
+    }
+    printf("\ny: ");
+    for (int i = 0; i < sizeof(encData.y); i++) {
+        printf("%02X ", encData.y[i]);
+    }
+    printf("\nM: ");
+    for (int i = 0; i < sizeof(encData.M); i++) {
+        printf("%02X ", encData.M[i]);
+    }
+    printf("\nC: ");
+    for (int i = 0; i < sizeof(encData.C); i++) {
+        printf("%02X ", encData.C[i]);
+    }
+    printf("\n");
+    
   return SDR_OK;
 }
 
@@ -1131,6 +1168,7 @@ int main(int argc, char *argv[]) {
     goto err;
   }
   printf("\nSGD_SM3Hash success\n\n");
+  
 
   rv = SM2EncDec(phSessionHandle);
   if (rv != SDR_OK) {
