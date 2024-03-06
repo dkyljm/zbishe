@@ -4,14 +4,13 @@
 #include <stdlib.h>
 #include <string.h>
 #include <openssl/evp.h>
-/*
+#include "sdf.h"
 #include <openssl/bn.h>
 #include <openssl/ec.h>
 #include <openssl/err.h>
 #include <openssl/evp.h>
 #include <openssl/objects.h>
-#include <openssl/sm2.h>
-*/
+
 
 #include <stdio.h>
 #include <string.h>
@@ -550,78 +549,59 @@ SGD_RV SDF_HashFinal(SGD_HANDLE hSessionHandle, SGD_UCHAR *pucHash, SGD_UINT32 *
 }
 
 
-
-// SM2加密函数
-SGD_RV SDF_InternalEncrypt_ECC(SGD_HANDLE hSessionHandle, SGD_UINT32 uiIPKIndex,
-                               SGD_UINT32 uiAlgID, SGD_UCHAR *pucData, SGD_UINT32 uiDataLength,
-                               ECCCipher *pucEncData) {
-    // 检查算法类型是否为 SGD_SM2_3
+SGD_RV SDF_InternalEncrypt_ECC(SGD_HANDLE hSessionHandle, SGD_UINT32 uiIPKIndex, SGD_UINT32 uiAlgID, unsigned char *pucData, SGD_UINT32 uiDataLength, ECCCipher *pucEncData) {
     if (uiAlgID != SGD_SM2_3) {
-        return SDR_PARAMERR;
+        return SDR_UNKNOWERR; // 确保算法ID正确
     }
 
-    // 检查数据长度是否超出限制
-    if (uiDataLength > 136) {
-        return SDR_PARAMERR;
-    }
-
-    // 索引值检查
-    if (uiIPKIndex < 1 || uiIPKIndex > 8) {
-        return SDR_PARAMERR;
-    }
-
-    // 此处代码省略了具体的密钥加载逻辑，假设已经有了ECC的公钥和私钥
-
-    // 使用SM2算法进行加密
-    int ret = 0;
-    EC_KEY *ec_key = NULL;
-    const EVP_MD *digest = EVP_sm3();
-    size_t outlen = 0;
-
-    ec_key = EC_KEY_new_by_curve_name(NID_sm2);
-    if (!ec_key) {
+    // 创建EVP_PKEY上下文用于密钥管理
+    EVP_PKEY_CTX *pctx = EVP_PKEY_CTX_new_id(EVP_PKEY_SM2, NULL);
+    if (!pctx || EVP_PKEY_keygen_init(pctx) <= 0) {
+        EVP_PKEY_CTX_free(pctx);
         return SDR_UNKNOWERR;
     }
 
-    // 设置公钥
-    EC_POINT *pub_point = EC_POINT_new(EC_KEY_get0_group(ec_key));
-    BIGNUM *x = BN_new();
-    BIGNUM *y = BN_new();
-    BN_bin2bn(pubKey, 32, x);
-    BN_bin2bn(pubKey + 32, 32, y);
-    EC_POINT_set_affine_coordinates_GFp(EC_KEY_get0_group(ec_key), pub_point, x, y, NULL);
-    EC_KEY_set_public_key(ec_key, pub_point);
-
-    // SM2加密
-    unsigned char *ciphertext = OPENSSL_malloc(uiDataLength + 100); // 大小可能需要调整
-    if (!ciphertext) {
-        ret = SDR_NO_MEMORY;
-        goto clean_up;
+    // 使用pubKey初始化EVP_PKEY
+    EVP_PKEY *pkey = NULL;
+    size_t pubKeyLen = sizeof(pubKey);
+    if (EVP_PKEY_fromdata_init(pctx) <= 0 ||
+        EVP_PKEY_fromdata(pctx, &pkey, EVP_PKEY_PUBLIC_KEY,
+                          (OSSL_PARAM[]){
+                              OSSL_PARAM_octet_string("pub", (void*)pubKey, pubKeyLen),
+                              OSSL_PARAM_END
+                          }) <= 0) {
+        EVP_PKEY_CTX_free(pctx);
+        return SDR_UNKNOWERR;
     }
 
-    if (!EVP_PKEY_encrypt_old(ciphertext, &outlen, pucData, uiDataLength, EVP_PKEY_new_from_EC_KEY(NULL, ec_key, NULL))) {
-        ret = SDR_UNKNOWERR;
-        goto clean_up;
+    // 创建加密上下文并初始化
+    EVP_PKEY_CTX *ctx = EVP_PKEY_CTX_new(pkey, NULL);
+    if (!ctx || EVP_PKEY_encrypt_init(ctx) <= 0) {
+        EVP_PKEY_free(pkey);
+        EVP_PKEY_CTX_free(ctx);
+        return SDR_UNKNOWERR;
     }
 
-    // 将密文复制到输出结构
-    memcpy(pucEncData->C, ciphertext, outlen);
-    // 这里需要根据实际ECCCipher结构来填充其他字段，比如密文长度等
+    // 执行加密
+    size_t outlen = 0;
+    if (EVP_PKEY_encrypt(ctx, NULL, &outlen, pucData, uiDataLength) <= 0) {
+        EVP_PKEY_CTX_free(ctx);
+        return SDR_UNKNOWERR;
+    }
+    
+    if (EVP_PKEY_encrypt(ctx, pucEncData->C, &outlen, pucData, uiDataLength) <= 0) {
+        EVP_PKEY_CTX_free(ctx);
+        return SDR_UNKNOWERR;
+    }
+    pucEncData->clength = (unsigned int)outlen; // 设置加密数据长度
 
-    ret = SDR_OK;
+    // 释放资源
+    EVP_PKEY_free(pkey);
+    EVP_PKEY_CTX_free(ctx);
+    EVP_PKEY_CTX_free(pctx);
 
-clean_up:
-    if (ec_key) EC_KEY_free(ec_key);
-    if (pub_point) EC_POINT_free(pub_point);
-    if (x) BN_free(x);
-    if (y) BN_free(y);
-    if (ciphertext) OPENSSL_free(ciphertext);
-
-    return ret;
+    return SDR_OK;
 }
-
-
-
 /*
 
 SGD_RV SDF_InternalEncrypt_ECC(SGD_HANDLE hSessionHandle, SGD_UINT32 uiIPKIndex,

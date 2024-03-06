@@ -883,25 +883,7 @@ SGD_RV SM2EncDec(SGD_HANDLE phSessionHandle) {
     printf("memcpy diff \n");
     return -1;
   }
-   // 输出加密后的数据
-    printf("Encrypted Data:\n");
-    printf("x: ");
-    for (int i = 0; i < sizeof(pucData.x); i++) {
-        printf("%02X ", encData.x[i]);
-    }
-    printf("\ny: ");
-    for (int i = 0; i < sizeof(encData.y); i++) {
-        printf("%02X ", encData.y[i]);
-    }
-    printf("\nM: ");
-    for (int i = 0; i < sizeof(encData.M); i++) {
-        printf("%02X ", encData.M[i]);
-    }
-    printf("\nC: ");
-    for (int i = 0; i < sizeof(encData.C); i++) {
-        printf("%02X ", encData.C[i]);
-    }
-    printf("\n");
+
     
   return SDR_OK;
 }
