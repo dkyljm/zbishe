@@ -463,8 +463,20 @@ extern "C" {
 	SGD_RV SDF_HashFinal(SGD_HANDLE hSessionHandle, SGD_UCHAR *pucHash, SGD_UINT32 *puiHashLength);
 
 
+
+void initialize_openssl(void);
+void cleanup_openssl(void);
+
+void handleErrors(void);
+SGD_RV sm4_encrypt(SGD_HANDLE hSessionHandle,const SGD_UCHAR *plaintext, int plaintext_len, const SGD_UCHAR *key, SGD_UCHAR *ciphertext);
+SGD_RV sm4_decrypt(SGD_HANDLE hSessionHandle,const SGD_UCHAR *ciphertext, int ciphertext_len, const SGD_UCHAR *key, SGD_UCHAR *plaintext, int *plaintext_len);
+
 #ifdef __cplusplus
 }
 #endif
 
 #endif /*#ifndef _SDF_H_*/
+
+
+
+

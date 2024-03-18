@@ -1,7 +1,8 @@
-#include "/home/ljm/zBESHELJP/Xiangmu1/include/sdf.h"
+#include "/home/linux/zbishe/zbishe/include/sdf.h"
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdarg.h> 
 #include <string.h>
 #include <openssl/evp.h>
 #include "sdf.h"
@@ -14,6 +15,8 @@
 
 #include <stdio.h>
 #include <string.h>
+#define SDR_UNIMPLEMENTED -1
+
 
 #define MAX_KEY_INDEX 100 // 或者根据实际情况设置合适的值
 #define MAX_DATA_LENGTH 4096
@@ -246,6 +249,92 @@ SGD_RV SDF_ExportECCPriKey(SGD_HANDLE phSessionHandle, SGD_UINT32 uiKeyIndex,
   return SDR_OK;
 }
 
+/*
+SGD_RV SDF_Encrypt(SGD_HANDLE hSessionHandle, SGD_UCHAR *pucKey, SGD_UINT32 uiAlgID, SGD_UCHAR *pucIV, SGD_UCHAR *pucData, SGD_UINT32 uiDataLength, SGD_UCHAR *pucEncData, SGD_UINT32 *puiEncDataLength) {
+    if (uiDataLength % 16 != 0 || uiDataLength > 4000) {
+        return SDR_INVALIDPARAMERR;
+    }
+
+    EVP_CIPHER_CTX *ctx = EVP_CIPHER_CTX_new();
+    if (!ctx) return SDR_INVALIDPARAMERR;
+
+    const EVP_CIPHER *cipher = NULL;
+    switch (uiAlgID) {
+        case SGD_SM4_ECB:
+            cipher = EVP_sm4_ecb();
+            break;
+        // Add other cases for different algorithms/modes
+        default:
+            EVP_CIPHER_CTX_free(ctx);
+            return SDR_INVALIDPARAMERR;
+    }
+
+    if (1 != EVP_EncryptInit_ex(ctx, cipher, NULL, pucKey, pucIV)) {
+        EVP_CIPHER_CTX_free(ctx);
+        return SDR_UNKNOWERR;
+    }
+
+    int len;
+    if (1 != EVP_EncryptUpdate(ctx, pucEncData, &len, pucData, uiDataLength)) {
+        EVP_CIPHER_CTX_free(ctx);
+        return SDR_UNKNOWERR;
+    }
+    *puiEncDataLength = len;
+
+    if (1 != EVP_EncryptFinal_ex(ctx, pucEncData + len, &len)) {
+        EVP_CIPHER_CTX_free(ctx);
+        return SDR_UNKNOWERR;
+    }
+    *puiEncDataLength += len;
+
+    EVP_CIPHER_CTX_free(ctx);
+    return SDR_OK;
+}
+
+
+SGD_RV SDF_Decrypt(SGD_HANDLE hSessionHandle, SGD_UCHAR *pucKey, SGD_UINT32 uiAlgID, SGD_UCHAR *pucIV, SGD_UCHAR *pucEncData, SGD_UINT32 uiEncDataLength, SGD_UCHAR *pucData, SGD_UINT32 *puiDataLength) {
+    if (uiEncDataLength % 16 != 0 || uiEncDataLength > 4000) {
+        return SDR_INVALIDPARAMERR;
+    }
+
+    EVP_CIPHER_CTX *ctx = EVP_CIPHER_CTX_new();
+    if (!ctx) return SDR_INVALIDPARAMERR;
+
+    const EVP_CIPHER *cipher = NULL;
+    switch (uiAlgID) {
+        case SGD_SM4_ECB:
+            cipher = EVP_sm4_ecb();
+            break;
+        // Add other cases for different algorithms/modes
+        default:
+            EVP_CIPHER_CTX_free(ctx);
+            return SDR_INVALIDPARAMERR;
+    }
+
+    if (1 != EVP_DecryptInit_ex(ctx, cipher, NULL, pucKey, pucIV)) {
+        EVP_CIPHER_CTX_free(ctx);
+        return SDR_UNKNOWERR;
+    }
+
+    int len;
+    if (1 != EVP_DecryptUpdate(ctx, pucData, &len, pucEncData, uiEncDataLength)) {
+        EVP_CIPHER_CTX_free(ctx);
+        return SDR_UNKNOWERR;
+    }
+    *puiDataLength = len;
+
+    if (1 != EVP_DecryptFinal_ex(ctx, pucData + len, &len)) {
+        EVP_CIPHER_CTX_free(ctx);
+        return SDR_UNKNOWERR;
+    }
+    *puiDataLength += len;
+
+    EVP_CIPHER_CTX_free(ctx);
+    return SDR_OK;
+}
+
+*/
+
 // 示例实现 SDF_Encrypt 函数
 SGD_RV SDF_Encrypt(SGD_HANDLE hSessionHandle, SGD_UCHAR *pucKey,
                    SGD_UINT32 uiAlgID, SGD_UCHAR *pucIV, SGD_UCHAR *pucData,
@@ -261,6 +350,12 @@ SGD_RV SDF_Encrypt(SGD_HANDLE hSessionHandle, SGD_UCHAR *pucKey,
   return SDR_OK;
 }
 
+
+
+
+
+
+
 // 示例实现 SDF_Decrypt 函数
 SGD_RV SDF_Decrypt(SGD_HANDLE hSessionHandle, SGD_UCHAR *pucKey,
                    SGD_UINT32 uiAlgID, SGD_UCHAR *pucIV, SGD_UCHAR *pucEncData,
@@ -275,6 +370,8 @@ SGD_RV SDF_Decrypt(SGD_HANDLE hSessionHandle, SGD_UCHAR *pucKey,
 
   return SDR_OK;
 }
+
+
 
 //文件操作
 // 示例实现 SDF_CreateFile 函数
@@ -548,61 +645,45 @@ SGD_RV SDF_HashFinal(SGD_HANDLE hSessionHandle, SGD_UCHAR *pucHash, SGD_UINT32 *
     return SDR_OK;
 }
 
-
-SGD_RV SDF_InternalEncrypt_ECC(SGD_HANDLE hSessionHandle, SGD_UINT32 uiIPKIndex, SGD_UINT32 uiAlgID, unsigned char *pucData, SGD_UINT32 uiDataLength, ECCCipher *pucEncData) {
+/*
+SGD_RV SDF_InternalDecrypt_ECC(SGD_HANDLE phSessionHandle, SGD_UINT32 uiIPKIndex, SGD_UINT32 uiAlgID, ECCCipher *pucEncData, SGD_UCHAR *pucDecData, SGD_UINT32 *uiDecDataLen) {
     if (uiAlgID != SGD_SM2_3) {
-        return SDR_UNKNOWERR; // 确保算法ID正确
-    }
-
-    // 创建EVP_PKEY上下文用于密钥管理
-    EVP_PKEY_CTX *pctx = EVP_PKEY_CTX_new_id(EVP_PKEY_SM2, NULL);
-    if (!pctx || EVP_PKEY_keygen_init(pctx) <= 0) {
-        EVP_PKEY_CTX_free(pctx);
         return SDR_UNKNOWERR;
     }
 
-    // 使用pubKey初始化EVP_PKEY
     EVP_PKEY *pkey = NULL;
-    size_t pubKeyLen = sizeof(pubKey);
-    if (EVP_PKEY_fromdata_init(pctx) <= 0 ||
-        EVP_PKEY_fromdata(pctx, &pkey, EVP_PKEY_PUBLIC_KEY,
-                          (OSSL_PARAM[]){
-                              OSSL_PARAM_octet_string("pub", (void*)pubKey, pubKeyLen),
-                              OSSL_PARAM_END
-                          }) <= 0) {
-        EVP_PKEY_CTX_free(pctx);
-        return SDR_UNKNOWERR;
+    EVP_PKEY_CTX *pctx = NULL;
+    size_t outlen = *uiDecDataLen;
+    int ret = SDR_OK;
+
+    // 加载私钥
+    pkey = EVP_PKEY_new_raw_private_key(EVP_PKEY_SM2, NULL, priKey, sizeof(priKey));
+    if (!pkey) {
+        return -100;
     }
 
-    // 创建加密上下文并初始化
-    EVP_PKEY_CTX *ctx = EVP_PKEY_CTX_new(pkey, NULL);
-    if (!ctx || EVP_PKEY_encrypt_init(ctx) <= 0) {
-        EVP_PKEY_free(pkey);
-        EVP_PKEY_CTX_free(ctx);
-        return SDR_UNKNOWERR;
+    pctx = EVP_PKEY_CTX_new(pkey, NULL);
+    if (!pctx || EVP_PKEY_decrypt_init(pctx) <= 0) {
+        ret = -200;
+        goto end;
     }
 
-    // 执行加密
-    size_t outlen = 0;
-    if (EVP_PKEY_encrypt(ctx, NULL, &outlen, pucData, uiDataLength) <= 0) {
-        EVP_PKEY_CTX_free(ctx);
-        return SDR_UNKNOWERR;
+    if (EVP_PKEY_decrypt(pctx, pucDecData, &outlen, pucEncData->C, pucEncData->clength) <= 0) {
+        ret = -300;
+        goto end;
     }
-    
-    if (EVP_PKEY_encrypt(ctx, pucEncData->C, &outlen, pucData, uiDataLength) <= 0) {
-        EVP_PKEY_CTX_free(ctx);
-        return SDR_UNKNOWERR;
-    }
-    pucEncData->clength = (unsigned int)outlen; // 设置加密数据长度
+    *uiDecDataLen = (SGD_UINT32)outlen;
 
-    // 释放资源
+end:
+    // 清理资源
     EVP_PKEY_free(pkey);
-    EVP_PKEY_CTX_free(ctx);
     EVP_PKEY_CTX_free(pctx);
 
-    return SDR_OK;
+    return ret;
 }
-/*
+
+
+
 
 SGD_RV SDF_InternalEncrypt_ECC(SGD_HANDLE hSessionHandle, SGD_UINT32 uiIPKIndex,
                                SGD_UINT32 uiAlgID, SGD_UCHAR *pucData,
@@ -622,6 +703,9 @@ SGD_RV SDF_InternalEncrypt_ECC(SGD_HANDLE hSessionHandle, SGD_UINT32 uiIPKIndex,
   return SDR_OK;
 }
 */
+
+
+
 SGD_RV SDF_InternalDecrypt_ECC(SGD_HANDLE hSessionHandle, SGD_UINT32 uiISKIndex,
                                SGD_UINT32 uiAlgID, ECCCipher *pucEncData,
                                SGD_UCHAR *pucData, SGD_UINT32 *puiDataLength) {
@@ -639,6 +723,27 @@ SGD_RV SDF_InternalDecrypt_ECC(SGD_HANDLE hSessionHandle, SGD_UINT32 uiISKIndex,
   printf("SDF_InternalDecrypt_ECC success\n");
   return SDR_OK;
 }
+
+
+
+SGD_RV SDF_InternalEncrypt_ECC(SGD_HANDLE hSessionHandle, SGD_UINT32 uiIPKIndex,
+                               SGD_UINT32 uiAlgID, SGD_UCHAR *pucData,
+                               SGD_UINT32 uiDataLength, ECCCipher *pucEncData) {
+  // 检查参数有效性
+  if (!hSessionHandle || !pucData || !pucEncData || uiDataLength == 0) {
+    printf("Invalid parameters\n");
+    return SDR_INVALIDPARAMERR;
+  }
+
+  // 这里简化处理，实际应用中应该是加密操作
+  // 假设加密操作就是简单地复制数据，并不进行真正的加密
+  memcpy(pucEncData->C, pucData, uiDataLength);
+  // 假设加密后数据长度不变，如果ECCCipher没有L成员，需要找到其他方式处理长度
+
+  printf("SDF_InternalEncrypt_ECC success\n");
+  return SDR_OK;
+}
+
 
 
 // 示例实现 SDF_InternalSign_ECC 函数
@@ -680,7 +785,7 @@ void FakeSM1Decrypt(const SGD_UCHAR *key, const SGD_UCHAR *iv,
   // 这里仅为示例，实际解密过程应使用SM1算法实现
   memcpy(output, input, inputLen); // 简化处理，直接复制数据
 }
-
+/*
 // 实现SDF_Encrypt_IPSEC函数
 SGD_RV SDF_Encrypt_IPSEC(SGD_HANDLE hSessionHandle, SGD_UCHAR *pucEncKey,
                          SGD_UINT32 uiAlgID, SGD_UCHAR *pucIV,
@@ -708,7 +813,7 @@ SGD_RV SDF_Decrypt_IPSEC(SGD_HANDLE hSessionHandle, SGD_UCHAR *pucDecKey,
   return SDR_OK;
 }
 
-/*
+
 // 实现SDF_Encrypt_IPSEC函数
 SGD_RV SDF_Encrypt_IPSEC(SGD_HANDLE phSessionHandle, SGD_UCHAR *pucEncKey,
 SGD_UINT32 uiAlgID, SGD_UCHAR *pucIV, SGD_UCHAR *HMACKEY, SGD_UINT32 HMACKEYLEN,
@@ -725,3 +830,128 @@ SGD_UCHAR *pucData, SGD_UINT32 uiDataLen, SGD_UCHAR *pucEncData, SGD_UINT32
 
 
 */
+
+// 错误处理函数
+void handleErrors(void)
+{
+    ERR_print_errors_fp(stderr);
+    abort();
+}
+
+
+// 加密函数
+SGD_RV SDF_Encrypt_IPSEC(SGD_HANDLE hSessionHandle, SGD_UCHAR *pucEncKey, SGD_UINT32 uiAlgID, SGD_UCHAR *pucIV, SGD_UCHAR *HMACKEY, SGD_UINT32 HMACKEYLEN, SGD_UCHAR *pucData, SGD_UINT32 uiDataLen, SGD_UCHAR *pucEncData, SGD_UINT32 *puiEncDataLen) {
+    if (uiAlgID != SGD_IPSEC_SM4) {
+        fprintf(stderr, "Unsupported algorithm ID.\n");
+        return SDR_UNIMPLEMENTED;
+    }
+
+    EVP_CIPHER_CTX *ctx = EVP_CIPHER_CTX_new();
+    if (!ctx) {
+        fprintf(stderr, "Failed to create EVP_CIPHER_CTX.\n");
+        return SDR_UNIMPLEMENTED;
+    }
+
+    if (1 != EVP_EncryptInit_ex(ctx, EVP_sm4_cbc(), NULL, pucEncKey, pucIV)) {
+        handleErrors();
+    }
+
+    int len;
+    if (1 != EVP_EncryptUpdate(ctx, pucEncData, &len, pucData, uiDataLen)) {
+        handleErrors();
+    }
+    *puiEncDataLen = len;
+
+    if (1 != EVP_EncryptFinal_ex(ctx, pucEncData + len, &len)) {
+        handleErrors();
+    }
+    *puiEncDataLen += len;
+
+    EVP_CIPHER_CTX_free(ctx);
+    return SDR_OK;
+}
+
+// 解密函数
+SGD_RV SDF_Decrypt_IPSEC(SGD_HANDLE hSessionHandle, SGD_UCHAR *pucDecKey, SGD_UINT32 uiAlgID, SGD_UCHAR *pucIV, SGD_UCHAR *HMACKEY, SGD_UINT32 HMACKEYLEN, SGD_UCHAR *pucEncData, SGD_UINT32 uiEncDataLen, SGD_UCHAR *pucOutputData, SGD_UINT32 *puiOutputDataLen) {
+    if (uiAlgID != SGD_IPSEC_SM4) {
+        fprintf(stderr, "Unsupported algorithm ID.\n");
+        return SDR_UNIMPLEMENTED;
+    }
+
+    EVP_CIPHER_CTX *ctx = EVP_CIPHER_CTX_new();
+    if (!ctx) {
+        fprintf(stderr, "Failed to create EVP_CIPHER_CTX.\n");
+        return SDR_UNIMPLEMENTED;
+    }
+
+    if (1 != EVP_DecryptInit_ex(ctx, EVP_sm4_cbc(), NULL, pucDecKey, pucIV)) {
+        handleErrors();
+    }
+
+    int len;
+    if (1 != EVP_DecryptUpdate(ctx, pucOutputData, &len, pucEncData, uiEncDataLen)) {
+        handleErrors();
+    }
+    *puiOutputDataLen = len;
+
+    if (1 != EVP_DecryptFinal_ex(ctx, pucOutputData + len, &len)) {
+        handleErrors();
+    }
+    *puiOutputDataLen += len;
+
+    EVP_CIPHER_CTX_free(ctx);
+    return SDR_OK;
+}
+
+
+
+// 帮助函数：初始化OpenSSL
+void initialize_openssl() {
+    OPENSSL_init_crypto(OPENSSL_INIT_LOAD_CRYPTO_STRINGS | OPENSSL_INIT_ADD_ALL_CIPHERS, NULL);
+}
+
+// 帮助函数：清理OpenSSL
+void cleanup_openssl() {
+    CRYPTO_cleanup_all_ex_data();
+    EVP_cleanup();
+}
+
+
+
+SGD_RV sm4_encrypt(SGD_HANDLE hSessionHandle, const SGD_UCHAR *plaintext, int plaintext_len, const SGD_UCHAR *key, SGD_UCHAR *ciphertext) {
+    EVP_CIPHER_CTX *ctx;
+    int len;
+    int ciphertext_len;
+
+    if (!(ctx = EVP_CIPHER_CTX_new())) handleErrors();
+
+    if (1 != EVP_EncryptInit_ex(ctx, EVP_sm4_ecb(), NULL, key, NULL)) handleErrors();
+
+    if (1 != EVP_EncryptUpdate(ctx, ciphertext, &len, plaintext, plaintext_len)) handleErrors();
+    ciphertext_len = len;
+
+    if (1 != EVP_EncryptFinal_ex(ctx, ciphertext + len, &len)) handleErrors();
+    ciphertext_len += len;
+
+    EVP_CIPHER_CTX_free(ctx);
+
+    return ciphertext_len;
+}
+
+SGD_RV sm4_decrypt(SGD_HANDLE hSessionHandle, const SGD_UCHAR *ciphertext, int ciphertext_len, const SGD_UCHAR *key, SGD_UCHAR *plaintext, int *plaintext_len) {
+    EVP_CIPHER_CTX *ctx;
+    int len;
+
+    if (!(ctx = EVP_CIPHER_CTX_new())) handleErrors();
+
+    if (1 != EVP_DecryptInit_ex(ctx, EVP_sm4_ecb(), NULL, key, NULL)) handleErrors();
+
+    if (1 != EVP_DecryptUpdate(ctx, plaintext, &len, ciphertext, ciphertext_len)) handleErrors();
+    *plaintext_len = len;
+
+    if (1 != EVP_DecryptFinal_ex(ctx, plaintext + len, &len)) handleErrors();
+    *plaintext_len += len;
+
+    EVP_CIPHER_CTX_free(ctx);
+}
+

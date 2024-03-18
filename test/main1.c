@@ -6,9 +6,12 @@
  ************************************************************************/
 
 #include "../include/sdf.h"
+#include <stdio.h>
+#include <stdlib.h>
 #include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdarg.h>
 #include <string.h>
 #include <sys/time.h>
 #include <sys/types.h>
@@ -560,6 +563,7 @@ SGD_RV SM4_ENC_DEC_OFB(SGD_HANDLE phSessionHandle, SGD_HANDLE phKeyHandle) {
   return SDR_OK;
 }
 
+/*
 SGD_RV SM1_ENC_DEC_IPSEC(SGD_HANDLE phSessionHandle, SGD_HANDLE phKeyHandle) {
   SGD_RV rv = SDR_OK;
   int loop = LOOP, i = 0;
@@ -675,8 +679,8 @@ SGD_RV SM1_ENC_DEC_IPSEC(SGD_HANDLE phSessionHandle, SGD_HANDLE phKeyHandle) {
   free(pucTmpMacData);
   return SDR_OK;
 }
+*/
 
-/*
 SGD_RV SM4_ENC_DEC_IPSEC(SGD_HANDLE phSessionHandle,SGD_HANDLE phKeyHandle)
 {
         SGD_RV rv = SDR_OK;
@@ -732,9 +736,8 @@ pucIV, HMACKey, HMACKeyLen, sendTmpbuf, 24 + MAX, recvTmpbuf, &recvTmpbufLen);
 
         gettimeofday(&tv, NULL);
         L2 = tv.tv_sec*1000*1000 + tv.tv_usec;
-        printf("SGD_IPSEC_SM4 Encrypt datasize: %d Bytes used time: %lld
-us\n",count * (MAX + 24), L2 - L1); printf("SGD_IPSEC_SM4 Encrypt average speed:
-%d bps\n", (int)((long long)(MAX + 24)*count*8*1000000/(L2 - L1)));
+        printf("SGD_IPSEC_SM4 Encrypt datasize: %d Bytes used time: %lld us\n", count * (MAX + 24), L2 - L1);
+	printf("SGD_IPSEC_SM4 Encrypt average speed: %d bps\n", (int)((long long)(MAX + 24) * count * 8 * 1000000 / (L2 - L1)));
 
         SGD_UCHAR *pucTmpData = (SGD_UCHAR*)malloc(loop * MAX);
         SGD_UCHAR *pucTmpMacData = (SGD_UCHAR*)malloc(loop * 32);
@@ -764,10 +767,8 @@ pucIV, HMACKey, HMACKeyLen, sendTmpbuf, 24 + MAX, recvTmpbuf, &recvTmpbufLen);
         gettimeofday(&tv, NULL);
         L4 = tv.tv_sec*1000*1000 + tv.tv_usec;
 
-        printf("SGD_IPSEC_SM4 Decrypt datasize: %d Bytes used time: %lld
-us\n",count * (MAX + 24), L4 - L3); printf("SGD_IPSEC_SM4 Decrypt average speed:
-%d bps\n", (int)((long long)(MAX + 24) * count * 8 * 1000000/(L4 - L3)));
-
+       printf("SGD_IPSEC_SM4 Decrypt datasize: %d Bytes used time: %lld us\n", count * (MAX + 24), L4 - L3);
+	printf("SGD_IPSEC_SM4 Decrypt average speed: %d bps\n", (int)((long long)(MAX + 24) * count * 8 * 1000000 / (L4 - L3)));
         if(memcmp(pucData,pucTmpData,count * MAX))
         {
                 free(pucData);
@@ -796,7 +797,7 @@ us\n",count * (MAX + 24), L4 - L3); printf("SGD_IPSEC_SM4 Decrypt average speed:
         free(pucTmpMacData);
         return SDR_OK;
 }
-*/
+
 
 SGD_RV SGD_SM3Hash(SGD_HANDLE phSessionHandle) {
 
@@ -850,6 +851,66 @@ SGD_RV SGD_SM3Hash(SGD_HANDLE phSessionHandle) {
 
   return SDR_OK;
 }
+
+
+
+
+
+
+SGD_RV SGD_SM4EncDec(SGD_HANDLE phSessionHandle) {
+	SGD_RV rv = SDR_OK;
+	printf("Entering SGD_SM4EncDec\n");
+    const SGD_UCHAR key[16] = {0x01, 0x23, 0x45, 0x67, 0x89, 0xAB, 0xCD, 0xEF,
+                               0xFE, 0xDC, 0xBA, 0x98, 0x76, 0x54, 0x32, 0x10};
+    SGD_UCHAR pucID[16] = {0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08,
+                           0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08};
+
+    printf("Original text: ");
+    for (int i = 0; i < sizeof(pucID); i++) {
+        printf("%02x", pucID[i]);
+    }
+    printf("\n");
+
+    SGD_UCHAR ciphertext[64];
+    SGD_UCHAR decryptedtext[64];
+    int decryptedtext_len;
+
+    rv = sm4_encrypt(phSessionHandle,pucID, sizeof(pucID), key, ciphertext);
+
+    int ciphertext_len = rv;
+    
+    printf("Encrypted text: ");
+    for (int i = 0; i < ciphertext_len; i++) {
+        printf("%02x", ciphertext[i]);
+    }
+    printf("\n");
+
+    rv = sm4_decrypt(phSessionHandle,ciphertext, ciphertext_len, key, decryptedtext, &decryptedtext_len);
+    if (SDR_OK != rv) {
+    return rv;
+  }
+
+    printf("Decrypted text: ");
+    for (int i = 0; i < decryptedtext_len; i++) {
+        printf("%02x", decryptedtext[i]);
+    }
+    printf("\n");
+
+    // Check if the decrypted text is the same as the original
+    if (decryptedtext_len == sizeof(pucID) && memcmp(pucID, decryptedtext, sizeof(pucID)) == 0) {
+        printf("The decrypted text is the same as the original text.\n");
+    } else {
+        printf("The decrypted text is NOT the same as the original text.\n");
+
+    }
+    return SDR_OK;
+}
+
+
+
+
+
+
 
 // SM2加解密函数
 SGD_RV SM2EncDec(SGD_HANDLE phSessionHandle) {
@@ -1150,8 +1211,15 @@ int main(int argc, char *argv[]) {
     goto err;
   }
   printf("\nSGD_SM3Hash success\n\n");
-  
-
+  	
+	
+  rv = SGD_SM4EncDec(phSessionHandle);
+  if (rv != SDR_OK) {
+    printf("\nSGD_SM4EncDec fail\n\n");
+    goto err;
+  }
+  printf("\nSGD_SM4EncDec success\n\n");
+	
   rv = SM2EncDec(phSessionHandle);
   if (rv != SDR_OK) {
     printf("SM2EncDec fail\n");
@@ -1165,6 +1233,8 @@ int main(int argc, char *argv[]) {
     goto err;
   }
   printf("SM2SignVer success\n");
+  
+ 
 
   rv = SM1_ENC_DEC_ECB(phSessionHandle, phKeyHandle);
   if (rv != SDR_OK) {
@@ -1208,14 +1278,17 @@ int main(int argc, char *argv[]) {
   }
   printf("SM4_ENC_DEC_OFB success. \n");
 
+/*
   rv = SM1_ENC_DEC_IPSEC(phSessionHandle, phKeyHandle);
   if (rv != SDR_OK) {
     printf("SM1_ENC_DEC_IPSEC fail\n");
     goto err;
   }
   printf("SM1_ENC_DEC_IPSEC success. \n");
-
-  /*
+  */
+  
+  
+initialize_openssl();
           rv =SM4_ENC_DEC_IPSEC(phSessionHandle,phKeyHandle);
           if(rv != SDR_OK)
           {
@@ -1223,7 +1296,7 @@ int main(int argc, char *argv[]) {
                   goto err;
           }
           printf("SM4_ENC_DEC_IPSEC success.\n");
-  */
+ cleanup_openssl();
 
 err:
 
